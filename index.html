@@ -715,7 +715,7 @@
       <p class="panel-label" style="margin-top:26px;">Kosten van een eigen auto</p>
 
       <div class="field">
-        <label for="laadkosten">Laadkosten per km</label>
+        <label for="laadkosten">Brandstof-/laadkosten per km</label>
         <div class="num-row">
           <span class="prefix">€</span>
           <input type="number" id="laadkosten" value="0.054" min="0" step="0.005">
@@ -800,7 +800,7 @@
         </div>
         <div class="route">
           <h2>Privé kopen</h2>
-          <div class="line-item"><span>Energie (laden)</span><span class="val" id="energieOut">—</span></div>
+          <div class="line-item"><span>Brandstof/energie</span><span class="val" id="energieOut">—</span></div>
           <div class="line-item"><span>Verzekering</span><span class="val" id="verzekeringOut">—</span></div>
           <div class="line-item"><span>Afschrijving</span><span class="val" id="afschrijvingOut">—</span></div>
           <div class="line-item"><span>Onderhoud</span><span class="val" id="onderhoudOut">—</span></div>
@@ -951,7 +951,7 @@
     ];
 
     const autoKostenRows = [
-      ['Laadkosten per km', '€' + (parseFloat($('laadkosten').value) || 0).toLocaleString('nl-NL', { minimumFractionDigits: 3 })],
+      ['Brandstof-/laadkosten per km', '€' + (parseFloat($('laadkosten').value) || 0).toLocaleString('nl-NL', { minimumFractionDigits: 3 })],
       ['Verzekering', eur(parseFloat($('verzekering').value) || 0) + ' / mnd'],
       ['Afschrijving', eur(parseFloat($('afschrijving').value) || 0) + ' / mnd'],
       ["Onderhoud & reparaties", eur(parseFloat($('onderhoud').value) || 0) + ' / mnd'],
