@@ -412,10 +412,10 @@
 
   footer {
     margin-top: 28px;
-    max-width: 70ch;
   }
 
   footer .explainer { margin-bottom: 16px; }
+  footer .footer-note { max-width: 70ch; }
 
   .assumptions {
     list-style: none;
@@ -448,29 +448,36 @@
 
   @media print {
     body { background: #fff; color: #111; padding: 0; }
-    .wrap { max-width: none; }
+    .wrap { max-width: none; display: flex; flex-direction: column; }
 
     .theme-toggle,
     .inputs,
-    .results-toolbar,
-    .explainer summary::after { display: none !important; }
+    .results-toolbar { display: none !important; }
 
-    header { border-bottom: 1px solid #111; }
+    header { border-bottom: 1px solid #111; order: 1; }
 
     main {
+      order: 2;
       grid-template-columns: 1fr;
       border: none;
       background: transparent;
     }
     .results { padding: 0; }
 
-    .explainer {
+    /* Uitleg-blok direct onder de header verplaatst naar pagina 2, samen met de uitgangspunten in de footer */
+    .wrap > .explainer {
+      order: 3;
+      break-before: page;
+      page-break-before: always;
       border: none;
       padding: 0;
       background: transparent;
       margin-bottom: 20px;
     }
     .explainer summary { cursor: default; }
+    .explainer summary::after { display: none !important; }
+
+    footer { order: 4; margin-top: 0; }
 
     .breakeven { border: 1px solid #111; background: transparent; }
 
@@ -869,27 +876,23 @@
   })();
 
   // PDF-export via de browser-printfunctie, met een nette print-opmaak
-  (function () {
-    const exportBtn = $('exportPdf');
+  $('exportPdf').addEventListener('click', () => {
+    const detailsEls = document.querySelectorAll('details.explainer');
+    const previousStates = Array.from(detailsEls).map(d => d.open);
+    detailsEls.forEach(d => { d.open = true; });
 
-    exportBtn.addEventListener('click', () => {
-      const detailsEls = document.querySelectorAll('details.explainer');
-      const previousStates = Array.from(detailsEls).map(d => d.open);
-      detailsEls.forEach(d => { d.open = true; });
-
-      $('printDate').textContent = new Date().toLocaleDateString('nl-NL', {
-        day: 'numeric', month: 'long', year: 'numeric'
-      });
-
-      function restore() {
-        detailsEls.forEach((d, i) => { d.open = previousStates[i]; });
-        window.removeEventListener('afterprint', restore);
-      }
-      window.addEventListener('afterprint', restore);
-
-      window.print();
+    $('printDate').textContent = new Date().toLocaleDateString('nl-NL', {
+      day: 'numeric', month: 'long', year: 'numeric'
     });
-  })();
+
+    function restore() {
+      detailsEls.forEach((d, i) => { d.open = previousStates[i]; });
+      window.removeEventListener('afterprint', restore);
+    }
+    window.addEventListener('afterprint', restore);
+
+    window.print();
+  });
 </script>
 </body>
 </html>
