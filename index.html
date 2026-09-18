@@ -249,6 +249,53 @@
     float: right;
   }
 
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .switch-row .switch-label-text {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  .switch {
+    position: relative;
+    display: inline-flex;
+    width: 38px;
+    height: 21px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .switch input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  .switch-track {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+  }
+  .switch-thumb {
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--brass-soft);
+    transition: transform 0.18s ease;
+  }
+  .switch input:checked ~ .switch-track .switch-thumb { transform: translateX(17px); }
+
+  .field-disabled { opacity: 0.45; }
+
   .results {
     padding: 28px 26px;
   }
@@ -447,14 +494,31 @@
   }
 
   @media print {
-    body { background: #fff; color: #111; padding: 0; }
+    /* PDF-export ziet er altijd uit als het lichte thema, ongeacht de actieve weergave op het scherm */
+    :root {
+      --bg: #F7F8F6;
+      --surface: #FFFFFF;
+      --ink: #253731;
+      --ink-soft: #5B6C64;
+      --ink-faint: #8A9891;
+      --brass: #9A7327;
+      --brass-soft: #C9AD74;
+      --positive: #2F6E58;
+      --positive-bg: #E9F1EC;
+      --negative: #93362A;
+      --negative-bg: #F5EAE7;
+      --line: #E3E7E1;
+      --line-strong: #CBD2C9;
+    }
+
+    body { padding: 0; }
     .wrap { max-width: none; display: flex; flex-direction: column; }
 
     .theme-toggle,
     .inputs,
     .results-toolbar { display: none !important; }
 
-    header { border-bottom: 1px solid #111; order: 1; }
+    header { order: 1; }
 
     main {
       order: 2;
@@ -464,22 +528,18 @@
     }
     .results { padding: 0; }
 
-    /* Uitleg-blok direct onder de header verplaatst naar pagina 2, samen met de uitgangspunten in de footer */
+    /* Uitleg-blok direct onder de header verplaatst naar pagina 2, samen met de uitgangspunten in de footer,
+       in dezelfde kaderstijl als op het scherm */
     .wrap > .explainer {
       order: 3;
       break-before: page;
       page-break-before: always;
-      border: none;
-      padding: 0;
-      background: transparent;
       margin-bottom: 20px;
     }
     .explainer summary { cursor: default; }
     .explainer summary::after { display: none !important; }
 
     footer { order: 4; margin-top: 0; }
-
-    .breakeven { border: 1px solid #111; background: transparent; }
 
     .print-only { display: block; }
     .print-only h2 {
@@ -490,8 +550,20 @@
     }
     .print-date {
       font-size: 12px;
-      color: #444;
+      color: var(--ink-faint);
       margin: -6px 0 20px;
+    }
+    .print-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 28px;
+    }
+    .print-columns h3 {
+      font-family: 'Newsreader', serif;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--brass);
+      margin: 0 0 8px;
     }
     .print-list {
       list-style: none;
@@ -503,8 +575,9 @@
       justify-content: space-between;
       gap: 12px;
       font-size: 12.5px;
+      color: var(--ink-soft);
       padding: 5px 0;
-      border-bottom: 1px dotted #ccc;
+      border-bottom: 1px dotted var(--line);
     }
   }
 </style>
@@ -574,6 +647,17 @@
           <input type="number" id="treinkosten" value="150" min="0" step="10">
         </div>
         <div class="hint">per maand, wordt van het leasebudget afgehaald voor uitbetaling</div>
+      </div>
+
+      <div class="field">
+        <div class="switch-row">
+          <label for="leaseBudgetUitkeerbaar" class="switch-label-text">Wordt het leasebudget uitgekeerd als je geen auto neemt?</label>
+          <span class="switch">
+            <input type="checkbox" id="leaseBudgetUitkeerbaar" checked>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </span>
+        </div>
+        <div class="hint">Staat dit uit, dan telt het leasebudget en de treinkosten hierboven niet mee bij 'Privé kopen' — alleen een eventuele aparte km-vergoeding dan nog wel.</div>
       </div>
 
       <div class="field">
@@ -659,7 +743,16 @@
       <div class="print-only">
         <p class="print-date">Berekening gegenereerd op <span id="printDate"></span></p>
         <h2>Ingevulde gegevens</h2>
-        <ul class="print-list" id="printInputsList"></ul>
+        <div class="print-columns">
+          <div>
+            <h3>Jouw situatie</h3>
+            <ul class="print-list" id="printInputsSituatie"></ul>
+          </div>
+          <div>
+            <h3>Kosten van een eigen auto</h3>
+            <ul class="print-list" id="printInputsAutokosten"></ul>
+          </div>
+        </div>
         <h2>Resultaat</h2>
       </div>
 
@@ -736,6 +829,7 @@
   function calc() {
     const catalogus = parseFloat($('catalogus').value) || 0;
     const leaseBudget = parseFloat($('leaseBudget').value) || 0;
+    const leaseBudgetUitkeerbaar = $('leaseBudgetUitkeerbaar').checked;
     const eigenBijdrage = parseFloat($('eigenBijdrage').value) || 0;
     const treinkosten = parseFloat($('treinkosten').value) || 0;
     const jaarkm = parseFloat($('jaarkm').value) || 0;
@@ -764,7 +858,7 @@
     $('bijtellingMaand').textContent = eur(leaseTotaal);
 
     // Privé route — inkomsten
-    const payout = Math.max(0, leaseBudget - treinkosten);
+    const payout = leaseBudgetUitkeerbaar ? Math.max(0, leaseBudget - treinkosten) : 0;
     const nettoPayout = payout * (1 - tarief);
     const jaarZakelijkKm = jaarkm * (pctZakelijk / 100);
     const kmVergoedingMax = jaarZakelijkKm * 0.25 / 12;
@@ -822,16 +916,21 @@
   function renderPrintInputs() {
     const kmVergoedingRaw = $('kmVergoedingInput').value;
     const schijfLabel = $('schijf').options[$('schijf').selectedIndex].text;
+    const leaseBudgetUitkeerbaar = $('leaseBudgetUitkeerbaar').checked;
 
-    const rows = [
+    const situatieRows = [
       ['Cataloguswaarde auto', eur(parseFloat($('catalogus').value) || 0)],
       ['Leasebudget werkgever', eur(parseFloat($('leaseBudget').value) || 0) + ' / mnd'],
+      ['Leasebudget uitkeerbaar?', leaseBudgetUitkeerbaar ? 'Ja' : 'Nee'],
       ['Eigen bijdrage boven leasebudget', eur(parseFloat($('eigenBijdrage').value) || 0) + ' / mnd'],
       ['Treinkosten', eur(parseFloat($('treinkosten').value) || 0) + ' / mnd'],
       ['Jaarkilometrage', (parseFloat($('jaarkm').value) || 0).toLocaleString('nl-NL') + ' km'],
       ['Aandeel zakelijke kilometers', $('pctZakelijk').value + '%'],
       ['Km-vergoeding zakelijk', kmVergoedingRaw === '' ? 'niet opgegeven' : eur(parseFloat(kmVergoedingRaw) || 0) + ' / mnd'],
       ['Belastingschijf', schijfLabel],
+    ];
+
+    const autoKostenRows = [
       ['Laadkosten per km', '€' + (parseFloat($('laadkosten').value) || 0).toLocaleString('nl-NL', { minimumFractionDigits: 3 })],
       ['Verzekering', eur(parseFloat($('verzekering').value) || 0) + ' / mnd'],
       ['Afschrijving', eur(parseFloat($('afschrijving').value) || 0) + ' / mnd'],
@@ -839,15 +938,35 @@
       ['Overige kosten', eur(parseFloat($('overigeKosten').value) || 0) + ' / mnd'],
     ];
 
-    $('printInputsList').innerHTML = rows.map(
-      ([label, val]) => `<li><span>${label}</span><span>${val}</span></li>`
-    ).join('');
+    const renderList = (id, rows) => {
+      $(id).innerHTML = rows.map(
+        ([label, val]) => `<li><span>${label}</span><span>${val}</span></li>`
+      ).join('');
+    };
+
+    renderList('printInputsSituatie', situatieRows);
+    renderList('printInputsAutokosten', autoKostenRows);
   }
 
   ['catalogus','leaseBudget','eigenBijdrage','treinkosten','jaarkm','pctZakelijk','kmVergoedingInput','schijf','laadkosten','verzekering','afschrijving','onderhoud','overigeKosten'].forEach(id => {
     $(id).addEventListener('input', calc);
   });
 
+  function syncLeaseFields() {
+    const enabled = $('leaseBudgetUitkeerbaar').checked;
+    ['leaseBudget', 'treinkosten'].forEach(id => {
+      const input = $(id);
+      input.disabled = !enabled;
+      input.closest('.field').classList.toggle('field-disabled', !enabled);
+    });
+  }
+
+  $('leaseBudgetUitkeerbaar').addEventListener('change', () => {
+    syncLeaseFields();
+    calc();
+  });
+
+  syncLeaseFields();
   calc();
 
   // Thema-toggle (licht/donker), onthouden in localStorage
