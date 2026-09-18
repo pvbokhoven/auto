@@ -288,13 +288,84 @@
   .verdict.win-prive { background: var(--positive-bg); color: var(--positive); }
   .verdict strong { font-weight: 600; }
 
+  .explainer {
+    margin-bottom: 28px;
+    padding: 22px 26px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+  }
+  .explainer summary {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--ink);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .explainer summary::-webkit-details-marker { display: none; }
+  .explainer summary::after {
+    content: "+";
+    flex-shrink: 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 400;
+    color: var(--brass);
+    font-size: 20px;
+  }
+  .explainer[open] summary::after { content: "–"; }
+  .explainer[open] summary { margin-bottom: 16px; }
+  .explainer-body p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    max-width: 72ch;
+    margin: 0 0 10px;
+  }
+  .explainer-body p:last-child { margin-bottom: 0; }
+
   footer {
-    margin-top: 22px;
-    font-size: 12px;
-    color: var(--ink-faint);
+    margin-top: 28px;
     max-width: 70ch;
   }
-  footer p { margin: 4px 0; }
+
+  .footer-heading {
+    font-size: 12.5px;
+    color: var(--brass);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin: 0 0 12px;
+  }
+
+  .assumptions {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+  }
+  .assumptions li {
+    position: relative;
+    padding: 8px 0 8px 18px;
+    border-bottom: 1px dotted var(--line);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ink-faint);
+  }
+  .assumptions li::before {
+    content: "–";
+    position: absolute;
+    left: 0;
+    color: var(--brass-soft);
+  }
+  .assumptions li:last-child { border-bottom: none; }
+  .assumptions strong { color: var(--ink-soft); font-weight: 600; }
+
+  .footer-note {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-style: italic;
+    margin: 0;
+  }
 </style>
 </head>
 <body>
@@ -304,6 +375,15 @@
     <h1>Leaseauto of eigen auto?</h1>
     <p class="sub">Reken uit wat je per maand kwijt bent, op basis van jouw leasebudget, bijtelling en de 2026-tarieven.</p>
   </header>
+
+  <details class="explainer">
+    <summary>Hoe werkt deze vergelijking?</summary>
+    <div class="explainer-body">
+      <p>Krijg je van je werkgever een leasebudget, dan heb je meestal de keuze: neem je daadwerkelijk een leaseauto van de zaak, of laat je het budget (na aftrek van eventuele treinkosten) uitbetalen als brutoloon en koop je zelf een auto? Deze tool zet beide routes naast elkaar en rekent ze door naar hetzelfde getal: wat kost het je per maand uit eigen zak.</p>
+      <p>Bij de leaseauto is dat vrijwel alleen de bijtelling — het fiscale bedrag dat wordt opgeteld bij je inkomen omdat je een auto van de zaak ook privé mag gebruiken — plus een eventuele eigen bijdrage. Bij privé kopen zet je de werkelijke autokosten (energie, verzekering, afschrijving, onderhoud, overig) af tegen wat het uitgekeerde leasebudget je netto oplevert, eventueel aangevuld met een zakelijke km-vergoeding. Het verschil tussen die twee maandbedragen bepaalt welke route voordeliger is, en met hoeveel.</p>
+      <p>Vul links jouw eigen cijfers in — de tool rekent live door zodra je een veld aanpast.</p>
+    </div>
+  </details>
 
   <main>
     <div class="inputs">
@@ -459,8 +539,17 @@
   </main>
 
   <footer>
-    <p>Uitgangspunten: bijtelling volledig elektrisch 2026 is 18% over de eerste €30.000 cataloguswaarde en 22% daarboven. De onbelaste kilometervergoeding in 2026 is €0,25/km. Het leasebudget dat je uitgekeerd krijgt als je geen auto neemt, wordt hier als belast brutoloon behandeld; de eigen bijdrage boven het leasebudget als een inhouding op je brutoloon — check dat allebei bij HR. De laadkosten per km zijn een richtprijs voor 2026 (thuis vs. publiek vs. snelladen lopen sterk uiteen); onderhoud is vooringevuld op het landelijk EV-gemiddelde (Bovag/RAI Aftersales Monitor). Alleen energiekosten voor je privékilometers zijn meegenomen — de kosten van je zakelijke kilometers worden verondersteld via de km-vergoeding te lopen. Full-service lease wordt verondersteld onderhoud, verzekering en laden te dekken.</p>
-    <p>Geen fiscaal advies — een hulpmiddel om je eigen situatie mee door te rekenen.</p>
+    <p class="footer-heading">Uitgangspunten</p>
+    <ul class="assumptions">
+      <li><strong>Bijtelling volledig elektrisch (2026):</strong> 18% over de eerste €30.000 cataloguswaarde, 22% over het meerdere daarboven.</li>
+      <li><strong>Onbelaste kilometervergoeding (2026):</strong> €0,25/km.</li>
+      <li><strong>Uitbetaald leasebudget:</strong> wordt hier behandeld als belast brutoloon; de eigen bijdrage boven het leasebudget als een inhouding op je brutoloon — check dat allebei bij HR, want dit verschilt per werkgever.</li>
+      <li><strong>Laadkosten per km:</strong> een richtprijs voor 2026 — thuisladen, publiek laden en snelladen lopen sterk uiteen in prijs.</li>
+      <li><strong>Onderhoud:</strong> vooringevuld op het landelijk gemiddelde voor EV's (±€263/jaar, Bovag/RAI Aftersales Monitor) — pas dit aan naar jouw auto en leeftijd.</li>
+      <li><strong>Energiekosten:</strong> alleen voor je privékilometers meegenomen — de kosten van je zakelijke kilometers worden verondersteld via de km-vergoeding te lopen.</li>
+      <li><strong>Full-service lease:</strong> wordt verondersteld onderhoud, verzekering en laden te dekken.</li>
+    </ul>
+    <p class="footer-note">Geen fiscaal advies — een hulpmiddel om je eigen situatie mee door te rekenen.</p>
   </footer>
 
 </div>
