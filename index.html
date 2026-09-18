@@ -518,7 +518,12 @@
     .inputs,
     .results-toolbar { display: none !important; }
 
-    header { order: 1; }
+    header {
+      position: relative;
+      order: 1;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+    }
 
     main {
       order: 2;
@@ -548,10 +553,13 @@
       font-size: 16px;
       margin: 0 0 10px;
     }
-    .print-date {
-      font-size: 12px;
+    header .print-date {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 11px;
       color: var(--ink-faint);
-      margin: -6px 0 20px;
+      margin: 0;
     }
     .print-columns {
       display: grid;
@@ -590,6 +598,7 @@
       <h1>Leaseauto of eigen auto?</h1>
       <p class="sub">Reken uit wat je per maand kwijt bent, op basis van jouw leasebudget, bijtelling en de 2026-tarieven.</p>
     </div>
+    <p class="print-date print-only">Berekening gegenereerd op <span id="printDate"></span></p>
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Wissel tussen licht en donker thema" title="Wissel tussen licht en donker thema">
       <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="4"></circle>
@@ -741,7 +750,6 @@
 
     <div class="results">
       <div class="print-only">
-        <p class="print-date">Berekening gegenereerd op <span id="printDate"></span></p>
         <h2>Ingevulde gegevens</h2>
         <div class="print-columns">
           <div>
