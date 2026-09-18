@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaseauto of eigen auto?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F8F6;
+    --surface: #FFFFFF;
+    --ink: #253731;
+    --ink-soft: #5B6C64;
+    --ink-faint: #8A9891;
+    --brass: #9A7327;
+    --brass-soft: #C9AD74;
+    --positive: #2F6E58;
+    --positive-bg: #E9F1EC;
+    --negative: #93362A;
+    --negative-bg: #F5EAE7;
+    --line: #E3E7E1;
+    --line-strong: #CBD2C9;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #232B27;
+      --surface: #2C352F;
+      --ink: #ECEFEA;
+      --ink-soft: #B7C1BA;
+      --ink-faint: #8A968F;
+      --brass: #D8B876;
+      --brass-soft: #8F7743;
+      --positive: #6FBF9C;
+      --positive-bg: #29372F;
+      --negative: #D98A7C;
+      --negative-bg: #372B27;
+      --line: #3B443E;
+      --line-strong: #4B5750;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #232B27;
+    --surface: #2C352F;
+    --ink: #ECEFEA;
+    --ink-soft: #B7C1BA;
+    --ink-faint: #8A968F;
+    --brass: #D8B876;
+    --brass-soft: #8F7743;
+    --positive: #6FBF9C;
+    --positive-bg: #29372F;
+    --negative: #D98A7C;
+    --negative-bg: #372B27;
+    --line: #3B443E;
+    --line-strong: #4B5750;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.5;
+    padding: 32px 20px 64px;
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  header {
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  h1 {
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+    font-weight: 500;
+    font-size: clamp(28px, 4vw, 40px);
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+    color: var(--ink);
+  }
+
+  .sub {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 56ch;
+    margin: 0;
+  }
+
+  main {
+    display: grid;
+    grid-template-columns: minmax(280px, 340px) 1fr;
+    gap: 0;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+  }
+
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    .inputs { border-right: none; border-bottom: 1px solid var(--line-strong); }
+  }
+
+  .inputs {
+    padding: 28px 26px;
+    border-right: 1px solid var(--line-strong);
+  }
+
+  .panel-label {
+    font-size: 12.5px;
+    color: var(--brass);
+    font-weight: 600;
+    margin: 0 0 20px;
+    letter-spacing: 0.02em;
+  }
+
+  .field {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .field:first-of-type { padding-top: 0; }
+
+  .field label {
+    display: block;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .field .hint {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 5px;
+  }
+
+  .num-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .num-row span.prefix {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    padding: 8px 10px;
+    border-radius: 3px;
+  }
+  input[type="number"]:focus {
+    outline: 2px solid var(--brass-soft);
+    outline-offset: 1px;
+  }
+
+  select {
+    width: 100%;
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14.5px;
+    padding: 8px 10px;
+    border-radius: 3px;
+  }
+  select:focus { outline: 2px solid var(--brass-soft); outline-offset: 1px; }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--brass);
+    margin-top: 4px;
+  }
+
+  .range-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    color: var(--ink);
+    float: right;
+  }
+
+  .results {
+    padding: 28px 26px;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin-bottom: 26px;
+  }
+
+  .route {
+    padding: 4px 20px;
+  }
+  .route:first-child { padding-left: 0; border-right: 1px solid var(--line); }
+  .route:last-child { padding-right: 0; }
+
+  @media (max-width: 560px) {
+    .compare { grid-template-columns: 1fr; }
+    .route:first-child { border-right: none; border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 18px; }
+    .route { padding-left: 0; padding-right: 0; }
+  }
+
+  .route h2 {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 18.5px;
+    margin: 0 0 14px;
+  }
+
+  .line-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    padding: 6px 0;
+    border-bottom: 1px dotted var(--line);
+    gap: 12px;
+  }
+  .line-item .val {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .headline-number {
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+  .headline-number .label {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .headline-number .amount {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px;
+    font-weight: 500;
+  }
+  .headline-number .amount.neg { color: var(--negative); }
+  .headline-number .amount.pos { color: var(--positive); }
+
+  .breakeven {
+    background: var(--bg);
+    border: 1px solid var(--brass-soft);
+    padding: 22px 24px;
+    margin-top: 6px;
+  }
+  .breakeven .label {
+    font-size: 12.5px;
+    color: var(--brass);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .breakeven .amount {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .breakeven p {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  .verdict {
+    margin-top: 16px;
+    padding: 16px 20px;
+    font-size: 14px;
+  }
+  .verdict.win-lease { background: var(--positive-bg); color: var(--positive); }
+  .verdict.win-prive { background: var(--positive-bg); color: var(--positive); }
+  .verdict strong { font-weight: 600; }
+
+  footer {
+    margin-top: 22px;
+    font-size: 12px;
+    color: var(--ink-faint);
+    max-width: 70ch;
+  }
+  footer p { margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Leaseauto of eigen auto?</h1>
+    <p class="sub">Reken uit wat je per maand kwijt bent, op basis van jouw leasebudget, bijtelling en de 2026-tarieven.</p>
+  </header>
+
+  <main>
+    <div class="inputs">
+      <p class="panel-label">Jouw situatie</p>
+
+      <div class="field">
+        <label for="catalogus">Cataloguswaarde auto (elektrisch)</label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="catalogus" value="35000" min="0" step="500">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="leaseBudget">Leasebudget van je werkgever (bruto / mnd)</label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="leaseBudget" value="950" min="0" step="10">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="eigenBijdrage">Eigen bijdrage boven leasebudget (bruto / mnd)</label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="eigenBijdrage" value="0" min="0" step="10">
+        </div>
+        <div class="hint">ingehouden op je brutoloon, dus fiscaal voordelig betaald</div>
+      </div>
+
+      <div class="field">
+        <label for="treinkosten">Treinkosten die worden afgetrokken als je geen lease neemt</label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="treinkosten" value="150" min="0" step="10">
+        </div>
+        <div class="hint">per maand, wordt van het leasebudget afgehaald voor uitbetaling</div>
+      </div>
+
+      <div class="field">
+        <label for="jaarkm">Totale jaarkilometrage</label>
+        <div class="num-row">
+          <input type="number" id="jaarkm" value="20000" min="0" step="500">
+          <span class="prefix">km</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pctZakelijk">Aandeel zakelijke kilometers <span class="range-value" id="pctZakelijkVal">50%</span></label>
+        <input type="range" id="pctZakelijk" value="50" min="0" max="100" step="5">
+      </div>
+
+      <div class="field">
+        <label for="kmVergoedingInput">Km-vergoeding zakelijk <span style="color:var(--ink-faint);">(optioneel)</span></label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="kmVergoedingInput" placeholder="alleen invullen als je dit apart ontvangt" min="0" step="5">
+        </div>
+        <div class="hint" id="kmVergoedingHint">Weet je niet zeker of je dit krijgt? Laat leeg — dan telt de tool 'm niet mee. Bij €0,25/km over je zakelijke kilometers zou dat max. — /mnd zijn.</div>
+      </div>
+
+      <div class="field">
+        <label for="schijf">Jouw belastingschijf (box 1, 2026)</label>
+        <select id="schijf">
+          <option value="0.3575">Tot €38.883 — 35,75%</option>
+          <option value="0.3756" selected>€38.883–€78.426 — 37,56%</option>
+          <option value="0.495">Boven €78.426 — 49,50%</option>
+        </select>
+      </div>
+
+      <p class="panel-label" style="margin-top:26px;">Kosten van een eigen auto</p>
+
+      <div class="field">
+        <label for="laadkosten">Laadkosten per km</label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="laadkosten" value="0.054" min="0" step="0.005">
+        </div>
+        <div class="hint">richtprijs 2026: thuisladen ±€0,05/km, publiek ±€0,08/km, snelladen ±€0,13/km</div>
+      </div>
+
+      <div class="field">
+        <label for="verzekering">Verzekering</label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="verzekering" value="0" min="0" step="5">
+        </div>
+        <div class="hint">per maand — richtprijs vaak €50–120, afhankelijk van leeftijd en schadevrije jaren</div>
+      </div>
+
+      <div class="field">
+        <label for="afschrijving">Afschrijving</label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="afschrijving" value="0" min="0" step="10">
+        </div>
+        <div class="hint">per maand — (aanschafprijs − verwachte waarde later) / aantal maanden, of gebruik een private-lease-indicatie als vuistregel</div>
+      </div>
+
+      <div class="field">
+        <label for="onderhoud">Onderhoud &amp; reparaties</label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="onderhoud" value="22" min="0" step="5">
+        </div>
+        <div class="hint">vooringevuld op het landelijk gemiddelde voor EV's (±€263/jaar, Bovag/RAI Aftersales Monitor) — pas aan naar jouw auto en leeftijd</div>
+      </div>
+
+      <div class="field" style="border-bottom:none;">
+        <label for="overigeKosten">Overige kosten <span style="color:var(--ink-faint);">(optioneel)</span></label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="overigeKosten" value="0" min="0" step="5">
+        </div>
+        <div class="hint">wegenbelasting (EV betaalt in 2026 zo'n 70% van het normale tarief), laadpas-abonnement, parkeren e.d.</div>
+      </div>
+    </div>
+
+    <div class="results">
+      <div class="compare">
+        <div class="route">
+          <h2>Leaseauto van de zaak</h2>
+          <div class="line-item"><span>Bijtellingsgrondslag</span><span class="val" id="grondslag">—</span></div>
+          <div class="line-item"><span>Belast tegen jouw tarief</span><span class="val" id="tariefLabel">—</span></div>
+          <div class="line-item"><span>Eigen bijdrage, netto (via brutoloon)</span><span class="val" id="eigenBijdrageNetto">—</span></div>
+          <div class="headline-number">
+            <div class="label">Kosten uit eigen zak, per maand</div>
+            <div class="amount neg" id="bijtellingMaand">—</div>
+          </div>
+        </div>
+        <div class="route">
+          <h2>Privé kopen</h2>
+          <div class="line-item"><span>Energie (laden)</span><span class="val" id="energieOut">—</span></div>
+          <div class="line-item"><span>Verzekering</span><span class="val" id="verzekeringOut">—</span></div>
+          <div class="line-item"><span>Afschrijving</span><span class="val" id="afschrijvingOut">—</span></div>
+          <div class="line-item"><span>Onderhoud</span><span class="val" id="onderhoudOut">—</span></div>
+          <div class="line-item"><span>Overige kosten</span><span class="val" id="overigOut">—</span></div>
+          <div class="line-item" style="font-weight:600; color:var(--ink);"><span>Totale autokosten</span><span class="val" id="totaalAutoOut">—</span></div>
+          <div class="line-item"><span>Netto budget + km-vergoeding</span><span class="val" id="beschikbaarOut">—</span></div>
+          <div class="headline-number">
+            <div class="label">Kosten uit eigen zak, per maand</div>
+            <div class="amount neg" id="priveNetto">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="breakeven">
+        <div class="label" id="verdictLabel">Vergelijking</div>
+        <div class="amount" id="verdictAmount">—</div>
+        <p id="verdictText">Vul links je eigen autokosten in voor een directe vergelijking.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>Uitgangspunten: bijtelling volledig elektrisch 2026 is 18% over de eerste €30.000 cataloguswaarde en 22% daarboven. De onbelaste kilometervergoeding in 2026 is €0,25/km. Het leasebudget dat je uitgekeerd krijgt als je geen auto neemt, wordt hier als belast brutoloon behandeld; de eigen bijdrage boven het leasebudget als een inhouding op je brutoloon — check dat allebei bij HR. De laadkosten per km zijn een richtprijs voor 2026 (thuis vs. publiek vs. snelladen lopen sterk uiteen); onderhoud is vooringevuld op het landelijk EV-gemiddelde (Bovag/RAI Aftersales Monitor). Alleen energiekosten voor je privékilometers zijn meegenomen — de kosten van je zakelijke kilometers worden verondersteld via de km-vergoeding te lopen. Full-service lease wordt verondersteld onderhoud, verzekering en laden te dekken.</p>
+    <p>Geen fiscaal advies — een hulpmiddel om je eigen situatie mee door te rekenen.</p>
+  </footer>
+
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const eur = n => n.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+
+  function calc() {
+    const catalogus = parseFloat($('catalogus').value) || 0;
+    const leaseBudget = parseFloat($('leaseBudget').value) || 0;
+    const eigenBijdrage = parseFloat($('eigenBijdrage').value) || 0;
+    const treinkosten = parseFloat($('treinkosten').value) || 0;
+    const jaarkm = parseFloat($('jaarkm').value) || 0;
+    const pctZakelijk = parseFloat($('pctZakelijk').value) || 0;
+    const tarief = parseFloat($('schijf').value);
+    const kmVergoedingRaw = $('kmVergoedingInput').value;
+    const kmVergoeding = kmVergoedingRaw === '' ? 0 : (parseFloat(kmVergoedingRaw) || 0);
+
+    const laadkosten = parseFloat($('laadkosten').value) || 0;
+    const verzekering = parseFloat($('verzekering').value) || 0;
+    const afschrijving = parseFloat($('afschrijving').value) || 0;
+    const onderhoud = parseFloat($('onderhoud').value) || 0;
+    const overig = parseFloat($('overigeKosten').value) || 0;
+
+    $('pctZakelijkVal').textContent = pctZakelijk + '%';
+
+    // Lease route
+    const eigenBijdrageNetto = eigenBijdrage * (1 - tarief);
+    const grondslag = Math.min(catalogus, 30000) * 0.18 + Math.max(0, catalogus - 30000) * 0.22;
+    const bijtellingBelasting = grondslag * tarief / 12;
+    const leaseTotaal = bijtellingBelasting + eigenBijdrageNetto;
+
+    $('grondslag').textContent = eur(grondslag) + ' / jr';
+    $('tariefLabel').textContent = (tarief * 100).toFixed(2).replace('.', ',') + '%';
+    $('eigenBijdrageNetto').textContent = eur(eigenBijdrageNetto) + ' / mnd';
+    $('bijtellingMaand').textContent = eur(leaseTotaal);
+
+    // Privé route — inkomsten
+    const payout = Math.max(0, leaseBudget - treinkosten);
+    const nettoPayout = payout * (1 - tarief);
+    const jaarZakelijkKm = jaarkm * (pctZakelijk / 100);
+    const kmVergoedingMax = jaarZakelijkKm * 0.25 / 12;
+    const beschikbaarPrive = nettoPayout + kmVergoeding;
+
+    $('kmVergoedingHint').textContent = "Weet je niet zeker of je dit krijgt? Laat leeg — dan telt de tool 'm niet mee. Bij €0,25/km over je zakelijke kilometers zou dat max. " + eur(kmVergoedingMax) + " /mnd zijn.";
+
+    // Privé route — kosten
+    const priveKmPerMaand = jaarkm * (1 - pctZakelijk / 100) / 12;
+    const energieKosten = priveKmPerMaand * laadkosten;
+    const totaalAuto = energieKosten + verzekering + afschrijving + onderhoud + overig;
+    const priveNetto = totaalAuto - beschikbaarPrive;
+
+    $('energieOut').textContent = eur(energieKosten) + ' / mnd';
+    $('verzekeringOut').textContent = eur(verzekering) + ' / mnd';
+    $('afschrijvingOut').textContent = eur(afschrijving) + ' / mnd';
+    $('onderhoudOut').textContent = eur(onderhoud) + ' / mnd';
+    $('overigOut').textContent = eur(overig) + ' / mnd';
+    $('totaalAutoOut').textContent = eur(totaalAuto) + ' / mnd';
+    $('beschikbaarOut').textContent = '− ' + eur(beschikbaarPrive) + ' / mnd';
+    $('priveNetto').textContent = eur(priveNetto);
+    $('priveNetto').className = 'amount ' + (priveNetto >= 0 ? 'neg' : 'pos');
+
+    // Vergelijking
+    const verschil = leaseTotaal - priveNetto; // positief => privé voordeliger
+    const incomplete = (afschrijving === 0 && verzekering === 0);
+    const labelEl = $('verdictLabel');
+    const amountEl = $('verdictAmount');
+    const textEl = $('verdictText');
+
+    if (Math.abs(verschil) < 1) {
+      labelEl.textContent = 'Vergelijking';
+      amountEl.textContent = eur(0);
+      amountEl.style.color = 'var(--ink)';
+      textEl.textContent = 'Bij deze cijfers ontlopen de twee opties elkaar nauwelijks.';
+    } else if (verschil > 0) {
+      labelEl.textContent = 'Privé kopen is voordeliger';
+      amountEl.textContent = eur(verschil) + ' / mnd';
+      amountEl.style.color = 'var(--positive)';
+      textEl.textContent = 'Dat houd je over ten opzichte van de leaseauto, op basis van de ingevulde kosten.';
+    } else {
+      labelEl.textContent = 'De leaseauto is voordeliger';
+      amountEl.textContent = eur(Math.abs(verschil)) + ' / mnd';
+      amountEl.style.color = 'var(--negative)';
+      textEl.textContent = 'Dat bespaar je ten opzichte van privé kopen, op basis van de ingevulde kosten.';
+    }
+
+    if (incomplete) {
+      textEl.textContent += ' Let op: vul afschrijving en verzekering in voor een volledige vergelijking — nu tellen alleen energie, onderhoud en eventuele overige kosten mee.';
+    }
+  }
+
+  ['catalogus','leaseBudget','eigenBijdrage','treinkosten','jaarkm','pctZakelijk','kmVergoedingInput','schijf','laadkosten','verzekering','afschrijving','onderhoud','overigeKosten'].forEach(id => {
+    $(id).addEventListener('input', calc);
+  });
+
+  calc();
+</script>
+</body>
+</html>
