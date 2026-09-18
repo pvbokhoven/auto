@@ -253,6 +253,32 @@
     padding: 28px 26px;
   }
 
+  .results-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+  }
+
+  .export-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .export-btn:hover {
+    border-color: var(--brass-soft);
+    color: var(--brass);
+  }
+
+  .print-only { display: none; }
+
   .compare {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -389,13 +415,7 @@
     max-width: 70ch;
   }
 
-  .footer-heading {
-    font-size: 12.5px;
-    color: var(--brass);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    margin: 0 0 12px;
-  }
+  footer .explainer { margin-bottom: 16px; }
 
   .assumptions {
     list-style: none;
@@ -424,6 +444,61 @@
     color: var(--ink-faint);
     font-style: italic;
     margin: 0;
+  }
+
+  @media print {
+    body { background: #fff; color: #111; padding: 0; }
+    .wrap { max-width: none; }
+
+    .theme-toggle,
+    .inputs,
+    .results-toolbar,
+    .explainer summary::after { display: none !important; }
+
+    header { border-bottom: 1px solid #111; }
+
+    main {
+      grid-template-columns: 1fr;
+      border: none;
+      background: transparent;
+    }
+    .results { padding: 0; }
+
+    .explainer {
+      border: none;
+      padding: 0;
+      background: transparent;
+      margin-bottom: 20px;
+    }
+    .explainer summary { cursor: default; }
+
+    .breakeven { border: 1px solid #111; background: transparent; }
+
+    .print-only { display: block; }
+    .print-only h2 {
+      font-family: 'Newsreader', serif;
+      font-weight: 500;
+      font-size: 16px;
+      margin: 0 0 10px;
+    }
+    .print-date {
+      font-size: 12px;
+      color: #444;
+      margin: -6px 0 20px;
+    }
+    .print-list {
+      list-style: none;
+      margin: 0 0 24px;
+      padding: 0;
+    }
+    .print-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12.5px;
+      padding: 5px 0;
+      border-bottom: 1px dotted #ccc;
+    }
   }
 </style>
 </head>
@@ -574,6 +649,24 @@
     </div>
 
     <div class="results">
+      <div class="print-only">
+        <p class="print-date">Berekening gegenereerd op <span id="printDate"></span></p>
+        <h2>Ingevulde gegevens</h2>
+        <ul class="print-list" id="printInputsList"></ul>
+        <h2>Resultaat</h2>
+      </div>
+
+      <div class="results-toolbar">
+        <button id="exportPdf" class="export-btn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Exporteer als PDF
+        </button>
+      </div>
+
       <div class="compare">
         <div class="route">
           <h2>Leaseauto van de zaak</h2>
@@ -610,16 +703,20 @@
   </main>
 
   <footer>
-    <p class="footer-heading">Uitgangspunten</p>
-    <ul class="assumptions">
-      <li><strong>Bijtelling volledig elektrisch (2026):</strong> 18% over de eerste €30.000 cataloguswaarde, 22% over het meerdere daarboven.</li>
-      <li><strong>Onbelaste kilometervergoeding (2026):</strong> €0,25/km.</li>
-      <li><strong>Uitbetaald leasebudget:</strong> wordt hier behandeld als belast brutoloon; de eigen bijdrage boven het leasebudget als een inhouding op je brutoloon — check dat allebei bij HR, want dit verschilt per werkgever.</li>
-      <li><strong>Laadkosten per km:</strong> een richtprijs voor 2026 — thuisladen, publiek laden en snelladen lopen sterk uiteen in prijs.</li>
-      <li><strong>Onderhoud:</strong> vooringevuld op het landelijk gemiddelde voor EV's (±€263/jaar, Bovag/RAI Aftersales Monitor) — pas dit aan naar jouw auto en leeftijd.</li>
-      <li><strong>Energiekosten:</strong> alleen voor je privékilometers meegenomen — de kosten van je zakelijke kilometers worden verondersteld via de km-vergoeding te lopen.</li>
-      <li><strong>Full-service lease:</strong> wordt verondersteld onderhoud, verzekering en laden te dekken.</li>
-    </ul>
+    <details class="explainer">
+      <summary>Uitgangspunten</summary>
+      <div class="explainer-body">
+        <ul class="assumptions">
+          <li><strong>Bijtelling volledig elektrisch (2026):</strong> 18% over de eerste €30.000 cataloguswaarde, 22% over het meerdere daarboven.</li>
+          <li><strong>Onbelaste kilometervergoeding (2026):</strong> €0,25/km.</li>
+          <li><strong>Uitbetaald leasebudget:</strong> wordt hier behandeld als belast brutoloon; de eigen bijdrage boven het leasebudget als een inhouding op je brutoloon — check dat allebei bij HR, want dit verschilt per werkgever.</li>
+          <li><strong>Laadkosten per km:</strong> een richtprijs voor 2026 — thuisladen, publiek laden en snelladen lopen sterk uiteen in prijs.</li>
+          <li><strong>Onderhoud:</strong> vooringevuld op het landelijk gemiddelde voor EV's (±€263/jaar, Bovag/RAI Aftersales Monitor) — pas dit aan naar jouw auto en leeftijd.</li>
+          <li><strong>Energiekosten:</strong> alleen voor je privékilometers meegenomen — de kosten van je zakelijke kilometers worden verondersteld via de km-vergoeding te lopen.</li>
+          <li><strong>Full-service lease:</strong> wordt verondersteld onderhoud, verzekering en laden te dekken.</li>
+        </ul>
+      </div>
+    </details>
     <p class="footer-note">Geen fiscaal advies — een hulpmiddel om je eigen situatie mee door te rekenen.</p>
   </footer>
 
@@ -711,6 +808,33 @@
     if (incomplete) {
       textEl.textContent += ' Let op: vul afschrijving en verzekering in voor een volledige vergelijking — nu tellen alleen energie, onderhoud en eventuele overige kosten mee.';
     }
+
+    renderPrintInputs();
+  }
+
+  function renderPrintInputs() {
+    const kmVergoedingRaw = $('kmVergoedingInput').value;
+    const schijfLabel = $('schijf').options[$('schijf').selectedIndex].text;
+
+    const rows = [
+      ['Cataloguswaarde auto', eur(parseFloat($('catalogus').value) || 0)],
+      ['Leasebudget werkgever', eur(parseFloat($('leaseBudget').value) || 0) + ' / mnd'],
+      ['Eigen bijdrage boven leasebudget', eur(parseFloat($('eigenBijdrage').value) || 0) + ' / mnd'],
+      ['Treinkosten', eur(parseFloat($('treinkosten').value) || 0) + ' / mnd'],
+      ['Jaarkilometrage', (parseFloat($('jaarkm').value) || 0).toLocaleString('nl-NL') + ' km'],
+      ['Aandeel zakelijke kilometers', $('pctZakelijk').value + '%'],
+      ['Km-vergoeding zakelijk', kmVergoedingRaw === '' ? 'niet opgegeven' : eur(parseFloat(kmVergoedingRaw) || 0) + ' / mnd'],
+      ['Belastingschijf', schijfLabel],
+      ['Laadkosten per km', '€' + (parseFloat($('laadkosten').value) || 0).toLocaleString('nl-NL', { minimumFractionDigits: 3 })],
+      ['Verzekering', eur(parseFloat($('verzekering').value) || 0) + ' / mnd'],
+      ['Afschrijving', eur(parseFloat($('afschrijving').value) || 0) + ' / mnd'],
+      ["Onderhoud & reparaties", eur(parseFloat($('onderhoud').value) || 0) + ' / mnd'],
+      ['Overige kosten', eur(parseFloat($('overigeKosten').value) || 0) + ' / mnd'],
+    ];
+
+    $('printInputsList').innerHTML = rows.map(
+      ([label, val]) => `<li><span>${label}</span><span>${val}</span></li>`
+    ).join('');
   }
 
   ['catalogus','leaseBudget','eigenBijdrage','treinkosten','jaarkm','pctZakelijk','kmVergoedingInput','schijf','laadkosten','verzekering','afschrijving','onderhoud','overigeKosten'].forEach(id => {
@@ -741,6 +865,29 @@
       root.setAttribute('data-theme', next);
       try { localStorage.setItem('theme', next); } catch (e) {}
       syncToggle();
+    });
+  })();
+
+  // PDF-export via de browser-printfunctie, met een nette print-opmaak
+  (function () {
+    const exportBtn = $('exportPdf');
+
+    exportBtn.addEventListener('click', () => {
+      const detailsEls = document.querySelectorAll('details.explainer');
+      const previousStates = Array.from(detailsEls).map(d => d.open);
+      detailsEls.forEach(d => { d.open = true; });
+
+      $('printDate').textContent = new Date().toLocaleDateString('nl-NL', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      });
+
+      function restore() {
+        detailsEls.forEach((d, i) => { d.open = previousStates[i]; });
+        window.removeEventListener('afterprint', restore);
+      }
+      window.addEventListener('afterprint', restore);
+
+      window.print();
     });
   })();
 </script>
