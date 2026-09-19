@@ -750,13 +750,22 @@
         <div class="hint">vooringevuld op het landelijk gemiddelde voor EV's (±€263/jaar, Bovag/RAI Aftersales Monitor) — pas aan naar jouw auto en leeftijd</div>
       </div>
 
+      <div class="field">
+        <label for="wegenbelasting">Wegenbelasting</label>
+        <div class="num-row">
+          <span class="prefix">€</span>
+          <input type="number" id="wegenbelasting" value="0" min="0" step="5">
+        </div>
+        <div class="hint">per maand — een volledig elektrische auto betaalt in 2026 zo'n 70% van het normale tarief; check je eigen tarief op belastingdienst.nl</div>
+      </div>
+
       <div class="field" style="border-bottom:none;">
         <label for="overigeKosten">Overige kosten <span style="color:var(--ink-faint);">(optioneel)</span></label>
         <div class="num-row">
           <span class="prefix">€</span>
           <input type="number" id="overigeKosten" value="0" min="0" step="5">
         </div>
-        <div class="hint">wegenbelasting (EV betaalt in 2026 zo'n 70% van het normale tarief), laadpas-abonnement, parkeren e.d.</div>
+        <div class="hint">laadpas-abonnement, parkeren e.d.</div>
       </div>
     </div>
 
@@ -804,6 +813,7 @@
           <div class="line-item"><span>Verzekering</span><span class="val" id="verzekeringOut">—</span></div>
           <div class="line-item"><span>Afschrijving</span><span class="val" id="afschrijvingOut">—</span></div>
           <div class="line-item"><span>Onderhoud</span><span class="val" id="onderhoudOut">—</span></div>
+          <div class="line-item"><span>Wegenbelasting</span><span class="val" id="wegenbelastingOut">—</span></div>
           <div class="line-item"><span>Overige kosten</span><span class="val" id="overigOut">—</span></div>
           <div class="line-item" style="font-weight:600; color:var(--ink);"><span>Totale autokosten</span><span class="val" id="totaalAutoOut">—</span></div>
           <div class="line-item"><span>Netto budget + km-vergoeding</span><span class="val" id="beschikbaarOut">—</span></div>
@@ -830,9 +840,10 @@
           <li><strong>Bijtelling volledig elektrisch (2026):</strong> 18% over de eerste €30.000 cataloguswaarde, 22% over het meerdere daarboven.</li>
           <li><strong>Onbelaste kilometervergoeding (2026):</strong> €0,25/km.</li>
           <li><strong>Uitbetaald leasebudget:</strong> wordt hier behandeld als belast brutoloon; de eigen bijdrage boven het leasebudget als een inhouding op je brutoloon — check dat allebei bij HR, want dit verschilt per werkgever.</li>
-          <li><strong>Laadkosten per km:</strong> een richtprijs voor 2026 — thuisladen, publiek laden en snelladen lopen sterk uiteen in prijs.</li>
+          <li><strong>Brandstof-/laadkosten per km:</strong> een richtprijs voor 2026 — thuisladen, publiek laden, snelladen of tanken lopen sterk uiteen in prijs.</li>
           <li><strong>Onderhoud:</strong> vooringevuld op het landelijk gemiddelde voor EV's (±€263/jaar, Bovag/RAI Aftersales Monitor) — pas dit aan naar jouw auto en leeftijd.</li>
-          <li><strong>Energiekosten:</strong> alleen voor je privékilometers meegenomen — de kosten van je zakelijke kilometers worden verondersteld via de km-vergoeding te lopen.</li>
+          <li><strong>Wegenbelasting:</strong> een volledig elektrische auto betaalt in 2026 zo'n 70% van het normale tarief; voor benzine/diesel geldt het volledige tarief.</li>
+          <li><strong>Brandstof-/energiekosten:</strong> alleen voor je privékilometers meegenomen — de kosten van je zakelijke kilometers worden verondersteld via de km-vergoeding te lopen.</li>
           <li><strong>Full-service lease:</strong> wordt verondersteld onderhoud, verzekering en laden te dekken.</li>
         </ul>
       </div>
@@ -862,6 +873,7 @@
     const verzekering = parseFloat($('verzekering').value) || 0;
     const afschrijving = parseFloat($('afschrijving').value) || 0;
     const onderhoud = parseFloat($('onderhoud').value) || 0;
+    const wegenbelasting = parseFloat($('wegenbelasting').value) || 0;
     const overig = parseFloat($('overigeKosten').value) || 0;
 
     $('pctZakelijkVal').textContent = pctZakelijk + '%';
@@ -889,13 +901,14 @@
     // Privé route — kosten
     const priveKmPerMaand = jaarkm * (1 - pctZakelijk / 100) / 12;
     const energieKosten = priveKmPerMaand * laadkosten;
-    const totaalAuto = energieKosten + verzekering + afschrijving + onderhoud + overig;
+    const totaalAuto = energieKosten + verzekering + afschrijving + onderhoud + wegenbelasting + overig;
     const priveNetto = totaalAuto - beschikbaarPrive;
 
     $('energieOut').textContent = eur(energieKosten) + ' / mnd';
     $('verzekeringOut').textContent = eur(verzekering) + ' / mnd';
     $('afschrijvingOut').textContent = eur(afschrijving) + ' / mnd';
     $('onderhoudOut').textContent = eur(onderhoud) + ' / mnd';
+    $('wegenbelastingOut').textContent = eur(wegenbelasting) + ' / mnd';
     $('overigOut').textContent = eur(overig) + ' / mnd';
     $('totaalAutoOut').textContent = eur(totaalAuto) + ' / mnd';
     $('beschikbaarOut').textContent = '− ' + eur(beschikbaarPrive) + ' / mnd';
@@ -955,6 +968,7 @@
       ['Verzekering', eur(parseFloat($('verzekering').value) || 0) + ' / mnd'],
       ['Afschrijving', eur(parseFloat($('afschrijving').value) || 0) + ' / mnd'],
       ["Onderhoud & reparaties", eur(parseFloat($('onderhoud').value) || 0) + ' / mnd'],
+      ['Wegenbelasting', eur(parseFloat($('wegenbelasting').value) || 0) + ' / mnd'],
       ['Overige kosten', eur(parseFloat($('overigeKosten').value) || 0) + ' / mnd'],
     ];
 
@@ -968,7 +982,7 @@
     renderList('printInputsAutokosten', autoKostenRows);
   }
 
-  ['catalogus','leaseBudget','eigenBijdrage','treinkosten','jaarkm','pctZakelijk','kmVergoedingInput','schijf','laadkosten','verzekering','afschrijving','onderhoud','overigeKosten'].forEach(id => {
+  ['catalogus','leaseBudget','eigenBijdrage','treinkosten','jaarkm','pctZakelijk','kmVergoedingInput','schijf','laadkosten','verzekering','afschrijving','onderhoud','wegenbelasting','overigeKosten'].forEach(id => {
     $(id).addEventListener('input', calc);
   });
 
