@@ -718,7 +718,7 @@
         <label for="laadkosten">Brandstof-/laadkosten per km</label>
         <div class="num-row">
           <span class="prefix">€</span>
-          <input type="number" id="laadkosten" value="0.054" min="0" step="0.005">
+          <input type="number" id="laadkosten" value="0.08" min="0" step="0.005">
         </div>
         <div class="hint">richtprijs 2026: thuisladen ±€0,05/km, publiek ±€0,08/km, snelladen ±€0,13/km</div>
       </div>
@@ -727,7 +727,7 @@
         <label for="verzekering">Verzekering</label>
         <div class="num-row">
           <span class="prefix">€</span>
-          <input type="number" id="verzekering" value="0" min="0" step="5">
+          <input type="number" id="verzekering" value="100" min="0" step="5">
         </div>
         <div class="hint">per maand — richtprijs vaak €50–120, afhankelijk van leeftijd en schadevrije jaren</div>
       </div>
@@ -736,7 +736,7 @@
         <label for="afschrijving">Afschrijving</label>
         <div class="num-row">
           <span class="prefix">€</span>
-          <input type="number" id="afschrijving" value="0" min="0" step="10">
+          <input type="number" id="afschrijving" value="100" min="0" step="10">
         </div>
         <div class="hint">per maand — (aanschafprijs − verwachte waarde later) / aantal maanden, of gebruik een private-lease-indicatie als vuistregel</div>
       </div>
@@ -745,16 +745,16 @@
         <label for="onderhoud">Onderhoud &amp; reparaties</label>
         <div class="num-row">
           <span class="prefix">€</span>
-          <input type="number" id="onderhoud" value="22" min="0" step="5">
+          <input type="number" id="onderhoud" value="100" min="0" step="5">
         </div>
-        <div class="hint">vooringevuld op het landelijk gemiddelde voor EV's (±€263/jaar, Bovag/RAI Aftersales Monitor) — pas aan naar jouw auto en leeftijd</div>
+        <div class="hint">per maand — richtprijs, pas aan naar jouw auto, merk en leeftijd</div>
       </div>
 
       <div class="field">
         <label for="wegenbelasting">Wegenbelasting</label>
         <div class="num-row">
           <span class="prefix">€</span>
-          <input type="number" id="wegenbelasting" value="0" min="0" step="5">
+          <input type="number" id="wegenbelasting" value="100" min="0" step="5">
         </div>
         <div class="hint">per maand — een volledig elektrische auto betaalt in 2026 zo'n 70% van het normale tarief; check je eigen tarief op belastingdienst.nl</div>
       </div>
@@ -841,7 +841,7 @@
           <li><strong>Onbelaste kilometervergoeding (2026):</strong> €0,25/km.</li>
           <li><strong>Uitbetaald leasebudget:</strong> wordt hier behandeld als belast brutoloon; de eigen bijdrage boven het leasebudget als een inhouding op je brutoloon — check dat allebei bij HR, want dit verschilt per werkgever.</li>
           <li><strong>Brandstof-/laadkosten per km:</strong> een richtprijs voor 2026 — thuisladen, publiek laden, snelladen of tanken lopen sterk uiteen in prijs.</li>
-          <li><strong>Onderhoud:</strong> vooringevuld op het landelijk gemiddelde voor EV's (±€263/jaar, Bovag/RAI Aftersales Monitor) — pas dit aan naar jouw auto en leeftijd.</li>
+          <li><strong>Onderhoud:</strong> vooringevuld met een richtbedrag — pas dit aan naar jouw auto, merk en leeftijd.</li>
           <li><strong>Wegenbelasting:</strong> een volledig elektrische auto betaalt in 2026 zo'n 70% van het normale tarief; voor benzine/diesel geldt het volledige tarief.</li>
           <li><strong>Brandstof-/energiekosten:</strong> alleen voor je privékilometers meegenomen — de kosten van je zakelijke kilometers worden verondersteld via de km-vergoeding te lopen.</li>
           <li><strong>Full-service lease:</strong> wordt verondersteld onderhoud, verzekering en laden te dekken.</li>
