@@ -627,7 +627,8 @@
     <summary>Hoe werkt deze vergelijking?</summary>
     <div class="explainer-body">
       <p>Krijg je van je werkgever een leasebudget, dan heb je meestal de keuze: neem je daadwerkelijk een leaseauto van de zaak, of laat je het budget (na aftrek van eventuele treinkosten) uitbetalen als brutoloon en koop je zelf een auto? Deze tool zet beide routes naast elkaar en rekent ze door naar hetzelfde getal: wat kost het je per maand uit eigen zak.</p>
-      <p>Bij de leaseauto is dat vrijwel alleen de bijtelling — het fiscale bedrag dat wordt opgeteld bij je inkomen omdat je een auto van de zaak ook privé mag gebruiken — plus een eventuele eigen bijdrage. Bij privé kopen zet je de werkelijke autokosten (energie, verzekering, afschrijving, onderhoud, overig) af tegen wat het uitgekeerde leasebudget je netto oplevert, eventueel aangevuld met een zakelijke km-vergoeding. Het verschil tussen die twee maandbedragen bepaalt welke route voordeliger is, en met hoeveel.</p>
+      <p>Bij de leaseauto is dat vrijwel alleen de bijtelling — het fiscale bedrag dat wordt opgeteld bij je inkomen omdat je een auto van de zaak ook privé mag gebruiken — plus een eventuele eigen bijdrage. Bij privé kopen zet je de werkelijke autokosten (energie, verzekering, afschrijving, onderhoud, wegenbelasting, overig) af tegen wat het uitgekeerde leasebudget je netto oplevert. Het verschil tussen die twee maandbedragen bepaalt welke route voordeliger is, en met hoeveel.</p>
+      <p>De zakelijke kilometervergoeding werkt hierbij net als treinkosten: het bedrag (kilometers × tarief) wordt eerst bruto van de leasebudget-uitkering afgetrokken, en vervolgens onbelast — dus zonder inhouding van je belastingschijf — weer aan jou uitgekeerd. Dat scheelt met de rest van het uitgekeerde budget, waarover je wél belasting betaalt.</p>
       <p>Vul links jouw eigen cijfers in — de tool rekent live door zodra je een veld aanpast.</p>
     </div>
   </details>
@@ -695,12 +696,12 @@
       </div>
 
       <div class="field">
-        <label for="kmVergoedingInput">Km-vergoeding zakelijk <span style="color:var(--ink-faint);">(optioneel)</span></label>
+        <label for="kmVergoedingTarief">Zakelijke km-vergoeding (tarief per km)</label>
         <div class="num-row">
           <span class="prefix">€</span>
-          <input type="number" id="kmVergoedingInput" placeholder="alleen invullen als je dit apart ontvangt" min="0" step="5">
+          <input type="number" id="kmVergoedingTarief" value="0.23" min="0" step="0.01">
         </div>
-        <div class="hint" id="kmVergoedingHint">Weet je niet zeker of je dit krijgt? Laat leeg — dan telt de tool 'm niet mee. Bij €0,25/km over je zakelijke kilometers zou dat max. — /mnd zijn.</div>
+        <div class="hint" id="kmVergoedingHint">Wordt bruto van je leasebudget-uitkering afgetrokken (net als treinkosten) en vervolgens onbelast aan jou uitgekeerd — op basis van je zakelijke kilometers is dat nu — /mnd.</div>
       </div>
 
       <div class="field">
@@ -816,6 +817,7 @@
           <div class="line-item"><span>Wegenbelasting</span><span class="val" id="wegenbelastingOut">—</span></div>
           <div class="line-item"><span>Overige kosten</span><span class="val" id="overigOut">—</span></div>
           <div class="line-item" style="font-weight:600; color:var(--ink);"><span>Totale autokosten</span><span class="val" id="totaalAutoOut">—</span></div>
+          <div class="line-item"><span>Waarvan zakelijke km-vergoeding (netto)</span><span class="val" id="kmVergoedingOut">—</span></div>
           <div class="line-item"><span>Netto budget + km-vergoeding</span><span class="val" id="beschikbaarOut">—</span></div>
           <div class="headline-number">
             <div class="label">Kosten uit eigen zak, per maand</div>
@@ -838,8 +840,8 @@
       <div class="explainer-body">
         <ul class="assumptions">
           <li><strong>Bijtelling volledig elektrisch (2026):</strong> 18% over de eerste €30.000 cataloguswaarde, 22% over het meerdere daarboven.</li>
-          <li><strong>Onbelaste kilometervergoeding (2026):</strong> €0,25/km.</li>
-          <li><strong>Uitbetaald leasebudget:</strong> wordt hier behandeld als belast brutoloon; de eigen bijdrage boven het leasebudget als een inhouding op je brutoloon — check dat allebei bij HR, want dit verschilt per werkgever.</li>
+          <li><strong>Zakelijke km-vergoeding:</strong> standaard €0,23/km (aanpasbaar). Wordt bruto van je leasebudget-uitkering afgetrokken — net als treinkosten — en vervolgens onbelast aan jou uitgekeerd, dus zonder inhouding van je belastingschijf.</li>
+          <li><strong>Uitbetaald leasebudget:</strong> wordt hier behandeld als belast brutoloon, na aftrek van treinkosten en de zakelijke km-vergoeding; de eigen bijdrage boven het leasebudget als een inhouding op je brutoloon — check dit alles bij HR, want het verschilt per werkgever.</li>
           <li><strong>Brandstof-/laadkosten per km:</strong> een richtprijs voor 2026 — thuisladen, publiek laden, snelladen of tanken lopen sterk uiteen in prijs.</li>
           <li><strong>Onderhoud:</strong> vooringevuld met een richtbedrag — pas dit aan naar jouw auto, merk en leeftijd.</li>
           <li><strong>Wegenbelasting:</strong> een volledig elektrische auto betaalt in 2026 zo'n 70% van het normale tarief; voor benzine/diesel geldt het volledige tarief.</li>
@@ -866,8 +868,7 @@
     const jaarkm = parseFloat($('jaarkm').value) || 0;
     const pctZakelijk = parseFloat($('pctZakelijk').value) || 0;
     const tarief = parseFloat($('schijf').value);
-    const kmVergoedingRaw = $('kmVergoedingInput').value;
-    const kmVergoeding = kmVergoedingRaw === '' ? 0 : (parseFloat(kmVergoedingRaw) || 0);
+    const kmVergoedingTarief = parseFloat($('kmVergoedingTarief').value) || 0;
 
     const laadkosten = parseFloat($('laadkosten').value) || 0;
     const verzekering = parseFloat($('verzekering').value) || 0;
@@ -890,13 +891,14 @@
     $('bijtellingMaand').textContent = eur(leaseTotaal);
 
     // Privé route — inkomsten
-    const payout = leaseBudgetUitkeerbaar ? Math.max(0, leaseBudget - treinkosten) : 0;
-    const nettoPayout = payout * (1 - tarief);
     const jaarZakelijkKm = jaarkm * (pctZakelijk / 100);
-    const kmVergoedingMax = jaarZakelijkKm * 0.25 / 12;
+    const kmVergoeding = leaseBudgetUitkeerbaar ? (jaarZakelijkKm * kmVergoedingTarief / 12) : 0;
+    const payout = leaseBudgetUitkeerbaar ? Math.max(0, leaseBudget - treinkosten - kmVergoeding) : 0;
+    const nettoPayout = payout * (1 - tarief);
     const beschikbaarPrive = nettoPayout + kmVergoeding;
 
-    $('kmVergoedingHint').textContent = "Weet je niet zeker of je dit krijgt? Laat leeg — dan telt de tool 'm niet mee. Bij €0,25/km over je zakelijke kilometers zou dat max. " + eur(kmVergoedingMax) + " /mnd zijn.";
+    $('kmVergoedingOut').textContent = eur(kmVergoeding) + ' / mnd';
+    $('kmVergoedingHint').textContent = "Wordt bruto van je leasebudget-uitkering afgetrokken (net als treinkosten) en vervolgens onbelast aan jou uitgekeerd — op basis van je zakelijke kilometers is dat nu " + eur(kmVergoeding) + " / mnd.";
 
     // Privé route — kosten
     const priveKmPerMaand = jaarkm * (1 - pctZakelijk / 100) / 12;
@@ -947,7 +949,6 @@
   }
 
   function renderPrintInputs() {
-    const kmVergoedingRaw = $('kmVergoedingInput').value;
     const schijfLabel = $('schijf').options[$('schijf').selectedIndex].text;
     const leaseBudgetUitkeerbaar = $('leaseBudgetUitkeerbaar').checked;
 
@@ -959,7 +960,7 @@
       ['Treinkosten', eur(parseFloat($('treinkosten').value) || 0) + ' / mnd'],
       ['Jaarkilometrage', (parseFloat($('jaarkm').value) || 0).toLocaleString('nl-NL') + ' km'],
       ['Aandeel zakelijke kilometers', $('pctZakelijk').value + '%'],
-      ['Km-vergoeding zakelijk', kmVergoedingRaw === '' ? 'niet opgegeven' : eur(parseFloat(kmVergoedingRaw) || 0) + ' / mnd'],
+      ['Zakelijke km-vergoeding tarief', '€' + (parseFloat($('kmVergoedingTarief').value) || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2 }) + '/km'],
       ['Belastingschijf', schijfLabel],
     ];
 
@@ -982,7 +983,7 @@
     renderList('printInputsAutokosten', autoKostenRows);
   }
 
-  ['catalogus','leaseBudget','eigenBijdrage','treinkosten','jaarkm','pctZakelijk','kmVergoedingInput','schijf','laadkosten','verzekering','afschrijving','onderhoud','wegenbelasting','overigeKosten'].forEach(id => {
+  ['catalogus','leaseBudget','eigenBijdrage','treinkosten','jaarkm','pctZakelijk','kmVergoedingTarief','schijf','laadkosten','verzekering','afschrijving','onderhoud','wegenbelasting','overigeKosten'].forEach(id => {
     $(id).addEventListener('input', calc);
   });
 
