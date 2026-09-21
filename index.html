@@ -817,8 +817,9 @@
           <div class="line-item"><span>Wegenbelasting</span><span class="val" id="wegenbelastingOut">—</span></div>
           <div class="line-item"><span>Overige kosten</span><span class="val" id="overigOut">—</span></div>
           <div class="line-item" style="font-weight:600; color:var(--ink);"><span>Totale autokosten</span><span class="val" id="totaalAutoOut">—</span></div>
-          <div class="line-item"><span>Waarvan zakelijke km-vergoeding (netto)</span><span class="val" id="kmVergoedingOut">—</span></div>
-          <div class="line-item"><span>Netto budget + km-vergoeding</span><span class="val" id="beschikbaarOut">—</span></div>
+          <div class="line-item"><span>Netto leasebudget (na treinkosten &amp; km-vergoeding)</span><span class="val" id="nettoPayoutOut">—</span></div>
+          <div class="line-item"><span>+ Zakelijke km-vergoeding (onbelast uitgekeerd)</span><span class="val" id="kmVergoedingOut">—</span></div>
+          <div class="line-item" style="font-weight:600; color:var(--ink);"><span>= Totaal beschikbaar budget</span><span class="val" id="beschikbaarOut">—</span></div>
           <div class="headline-number">
             <div class="label">Kosten uit eigen zak, per maand</div>
             <div class="amount neg" id="priveNetto">—</div>
@@ -845,7 +846,7 @@
           <li><strong>Brandstof-/laadkosten per km:</strong> een richtprijs voor 2026 — thuisladen, publiek laden, snelladen of tanken lopen sterk uiteen in prijs.</li>
           <li><strong>Onderhoud:</strong> vooringevuld met een richtbedrag — pas dit aan naar jouw auto, merk en leeftijd.</li>
           <li><strong>Wegenbelasting:</strong> een volledig elektrische auto betaalt in 2026 zo'n 70% van het normale tarief; voor benzine/diesel geldt het volledige tarief.</li>
-          <li><strong>Brandstof-/energiekosten:</strong> alleen voor je privékilometers meegenomen — de kosten van je zakelijke kilometers worden verondersteld via de km-vergoeding te lopen.</li>
+          <li><strong>Brandstof-/energiekosten:</strong> alleen voor je privékilometers meegenomen. De km-vergoeding is een all-in tarief dat verondersteld wordt ook de brandstofkosten van je zakelijke kilometers te dekken — die apart meetellen zou dubbelop zijn.</li>
           <li><strong>Full-service lease:</strong> wordt verondersteld onderhoud, verzekering en laden te dekken.</li>
         </ul>
       </div>
@@ -897,6 +898,7 @@
     const nettoPayout = payout * (1 - tarief);
     const beschikbaarPrive = nettoPayout + kmVergoeding;
 
+    $('nettoPayoutOut').textContent = eur(nettoPayout) + ' / mnd';
     $('kmVergoedingOut').textContent = eur(kmVergoeding) + ' / mnd';
     $('kmVergoedingHint').textContent = "Wordt bruto van je leasebudget-uitkering afgetrokken (net als treinkosten) en vervolgens onbelast aan jou uitgekeerd — op basis van je zakelijke kilometers is dat nu " + eur(kmVergoeding) + " / mnd.";
 
@@ -913,7 +915,7 @@
     $('wegenbelastingOut').textContent = eur(wegenbelasting) + ' / mnd';
     $('overigOut').textContent = eur(overig) + ' / mnd';
     $('totaalAutoOut').textContent = eur(totaalAuto) + ' / mnd';
-    $('beschikbaarOut').textContent = '− ' + eur(beschikbaarPrive) + ' / mnd';
+    $('beschikbaarOut').textContent = eur(beschikbaarPrive) + ' / mnd';
     $('priveNetto').textContent = eur(priveNetto);
     $('priveNetto').className = 'amount ' + (priveNetto >= 0 ? 'neg' : 'pos');
 
