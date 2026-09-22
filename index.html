@@ -568,15 +568,30 @@
     .breakeven p { font-size: 12.5px; }
 
     /* Uitleg-blok direct onder de header verplaatst naar pagina 2, samen met de uitgangspunten in de footer,
-       in dezelfde kaderstijl als op het scherm */
+       in dezelfde kaderstijl als op het scherm, compact genoeg om samen op 1 pagina te passen */
     .wrap > .explainer {
       order: 3;
       break-before: page;
       page-break-before: always;
-      margin-bottom: 20px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
     }
     .explainer summary { cursor: default; }
     .explainer summary::after { display: none !important; }
+    .explainer[open] summary { margin-bottom: 10px; }
+    .explainer-body p {
+      font-size: 12.5px;
+      margin: 0 0 6px;
+    }
+    #explainerScreenNote { display: none; }
+
+    footer .explainer { padding: 16px 20px; margin-bottom: 10px; }
+    .assumptions { margin: 0 0 4px; }
+    .assumptions li {
+      padding: 4px 0 4px 16px;
+      font-size: 11px;
+      line-height: 1.35;
+    }
 
     footer { order: 4; margin-top: 0; }
 
@@ -651,7 +666,7 @@
       <p>Krijg je van je werkgever een leasebudget, dan heb je meestal de keuze: neem je daadwerkelijk een leaseauto van de zaak, of laat je het budget (na aftrek van eventuele treinkosten) uitbetalen als brutoloon en koop je zelf een auto? Deze tool zet beide routes naast elkaar en rekent ze door naar hetzelfde getal: wat kost het je per maand uit eigen zak.</p>
       <p>Bij de leaseauto is dat vrijwel alleen de bijtelling — het fiscale bedrag dat wordt opgeteld bij je inkomen omdat je een auto van de zaak ook privé mag gebruiken — plus een eventuele eigen bijdrage. Bij privé kopen zet je de werkelijke autokosten (energie, verzekering, afschrijving, onderhoud, wegenbelasting, overig) af tegen wat het uitgekeerde leasebudget je netto oplevert. Het verschil tussen die twee maandbedragen bepaalt welke route voordeliger is, en met hoeveel.</p>
       <p>De laadkosten reken je over al je kilometers, zakelijk én privé — die betaal je namelijk altijd zelf, ongeacht waarvoor de rit was. De zakelijke kilometervergoeding is daar los van: dat bedrag (kilometers × tarief) wordt eerst bruto van de leasebudget-uitkering afgetrokken, en vervolgens onbelast — dus zonder inhouding van je belastingschijf — weer aan jou uitgekeerd. Omdat die vergoeding meestal hoger is dan je werkelijke laadkosten, houd je op je zakelijke kilometers per saldo iets over.</p>
-      <p>Vul links jouw eigen cijfers in — de tool rekent live door zodra je een veld aanpast.</p>
+      <p id="explainerScreenNote">Vul links jouw eigen cijfers in — de tool rekent live door zodra je een veld aanpast.</p>
     </div>
   </details>
 
