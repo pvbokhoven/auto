@@ -521,20 +521,26 @@
     margin: 0;
   }
 
-  .signature {
+  .site-footer {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line-strong);
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 14px;
+    justify-content: center;
+    gap: 10px;
   }
-  .signature-avatar {
-    width: 22px;
-    height: 22px;
+  .site-footer .signature-avatar {
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     object-fit: cover;
-    opacity: 0.85;
+    opacity: 0.9;
   }
-  .signature span {
+  .site-footer .divider {
+    color: var(--line-strong);
+  }
+  .site-footer .site-footer-text {
     font-size: 12px;
     color: var(--ink-faint);
   }
@@ -618,6 +624,7 @@
     }
 
     footer { order: 4; margin-top: 0; }
+    .site-footer { order: 5; margin-top: 14px; padding-top: 10px; }
 
     .print-only { display: block; }
     .print-only h2 {
@@ -922,11 +929,13 @@
       </div>
     </details>
     <p class="footer-note">Geen fiscaal advies — een hulpmiddel om je eigen situatie mee door te rekenen.</p>
-    <div class="signature">
-      <img src="peter_avatar.png" alt="" class="signature-avatar">
-      <span>Gemaakt door Peter</span>
-    </div>
   </footer>
+
+  <div class="site-footer">
+    <img src="peter_avatar.png" alt="" class="signature-avatar">
+    <span class="divider">|</span>
+    <span class="site-footer-text">Made in 2026</span>
+  </div>
 
 </div>
 
