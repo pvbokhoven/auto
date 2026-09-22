@@ -289,6 +289,12 @@
   }
   .calc-apply-btn:hover { background: var(--brass-soft); color: var(--surface); }
   .calc-apply-btn:disabled { opacity: 0.4; cursor: default; background: var(--surface); color: var(--brass); }
+  .calc-caveat {
+    margin: 8px 0 0;
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-style: italic;
+  }
 
   .num-row {
     position: relative;
@@ -932,17 +938,18 @@
               <input type="number" id="afschrijvingAanschaf" placeholder="bijv. 35000" min="0" step="500">
             </div>
             <div class="calc-row">
-              <label for="afschrijvingRestwaarde">Verwachte waarde later</label>
-              <input type="number" id="afschrijvingRestwaarde" placeholder="bijv. 15000" min="0" step="500">
+              <label for="afschrijvingLeeftijd">Leeftijd auto bij aankoop (jaar)</label>
+              <input type="number" id="afschrijvingLeeftijd" placeholder="bijv. 2" min="0" step="0.5">
             </div>
             <div class="calc-row">
-              <label for="afschrijvingMaanden">Aantal maanden</label>
+              <label for="afschrijvingMaanden">Aantal maanden dat je 'm rijdt</label>
               <input type="number" id="afschrijvingMaanden" placeholder="bijv. 48" min="1" step="1">
             </div>
             <div class="calc-result">
               <span>Geschat: <strong id="afschrijvingCalcResult">—</strong></span>
               <button type="button" id="afschrijvingCalcApply" class="calc-apply-btn" disabled>Overnemen</button>
             </div>
+            <p class="calc-caveat">Vuistregel op basis van een gemiddelde waardedalingscurve, niet merk- of type-specifiek — voor een preciezere schatting: zoek hetzelfde merk/bouwjaar/kilometerstand op een marktplaats.</p>
           </div>
         </details>
       </div>
@@ -1242,6 +1249,29 @@
     calc();
   });
 
+  // Gemiddelde, merk-onafhankelijke waardebehoud-curve (aandeel van de nieuwprijs dat
+  // resteert bij een bepaalde leeftijd) — een brede vuistregel, geen exacte voorspelling.
+  const RETENTION_CURVE = [
+    [0, 1.00], [1, 0.82], [2, 0.70], [3, 0.60], [4, 0.52],
+    [5, 0.46], [6, 0.40], [7, 0.36], [8, 0.32], [9, 0.29], [10, 0.26],
+    [15, 0.15], [20, 0.08]
+  ];
+
+  function retentionAt(ageYears) {
+    const age = Math.max(0, ageYears);
+    const curve = RETENTION_CURVE;
+    if (age >= curve[curve.length - 1][0]) return curve[curve.length - 1][1];
+    for (let i = 0; i < curve.length - 1; i++) {
+      const [age1, val1] = curve[i];
+      const [age2, val2] = curve[i + 1];
+      if (age >= age1 && age <= age2) {
+        const t = (age - age1) / (age2 - age1);
+        return val1 + t * (val2 - val1);
+      }
+    }
+    return curve[curve.length - 1][1];
+  }
+
   // Kleine rekenhulpjes: berekenen een schatting uit een paar losse getallen
   // en zetten die met één klik in het echte invoerveld.
   function setupCalcHelper({ inputIds, resultId, applyBtnId, targetId, compute, round, format }) {
@@ -1253,17 +1283,19 @@
 
     function update() {
       const values = inputs.map(el => parseFloat(el.value));
-      const result = values.every(v => !isNaN(v)) ? compute(...values) : null;
+      const raw = values.every(v => !isNaN(v)) ? compute(...values) : null;
+      const isObject = raw !== null && typeof raw === 'object';
+      const result = isObject ? raw.value : raw;
 
-      if (result === null || !isFinite(result) || result < 0) {
+      if (result === null || result === undefined || !isFinite(result) || result < 0) {
         currentValue = null;
         resultEl.textContent = '—';
         applyBtn.disabled = true;
         return;
       }
 
-      currentValue = round(result);
-      resultEl.textContent = format(currentValue);
+      currentValue = round ? round(result) : result;
+      resultEl.textContent = format(currentValue, isObject ? raw.meta : undefined);
       applyBtn.disabled = false;
     }
 
@@ -1276,13 +1308,21 @@
   }
 
   setupCalcHelper({
-    inputIds: ['afschrijvingAanschaf', 'afschrijvingRestwaarde', 'afschrijvingMaanden'],
+    inputIds: ['afschrijvingAanschaf', 'afschrijvingLeeftijd', 'afschrijvingMaanden'],
     resultId: 'afschrijvingCalcResult',
     applyBtnId: 'afschrijvingCalcApply',
     targetId: 'afschrijving',
-    compute: (aanschaf, restwaarde, maanden) => maanden > 0 ? (aanschaf - restwaarde) / maanden : null,
+    compute: (aanschaf, leeftijd, maanden) => {
+      if (maanden <= 0) return null;
+      const retentionNu = retentionAt(leeftijd);
+      if (retentionNu <= 0) return null;
+      const nieuwprijsEquivalent = aanschaf / retentionNu;
+      const retentionLater = retentionAt(leeftijd + maanden / 12);
+      const waardeLater = nieuwprijsEquivalent * retentionLater;
+      return { value: (aanschaf - waardeLater) / maanden, meta: { waardeLater } };
+    },
     round: v => Math.round(v),
-    format: v => eur(v) + ' / mnd'
+    format: (v, meta) => eur(v) + ' / mnd' + (meta ? ` (restwaarde ≈ ${eur(Math.round(meta.waardeLater))})` : '')
   });
 
   setupCalcHelper({
