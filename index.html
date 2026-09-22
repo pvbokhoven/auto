@@ -367,6 +367,28 @@
     color: var(--ink);
     white-space: nowrap;
   }
+  .line-item.subtotal {
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom-style: solid;
+    border-bottom-color: var(--line-strong);
+  }
+
+  .refund-label {
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 14px 0 2px;
+  }
+  .line-item.refund { color: var(--positive); }
+  .line-item.refund .val { color: var(--positive); }
+  .line-item.refund.subtotal {
+    border-top: 1px solid var(--line-strong);
+    border-bottom: none;
+    padding-top: 8px;
+    margin-top: 2px;
+  }
 
   .headline-number {
     margin-top: 14px;
@@ -816,10 +838,12 @@
           <div class="line-item"><span>Onderhoud</span><span class="val" id="onderhoudOut">—</span></div>
           <div class="line-item"><span>Wegenbelasting</span><span class="val" id="wegenbelastingOut">—</span></div>
           <div class="line-item"><span>Overige kosten</span><span class="val" id="overigOut">—</span></div>
-          <div class="line-item" style="font-weight:600; color:var(--ink);"><span>Totale autokosten</span><span class="val" id="totaalAutoOut">—</span></div>
-          <div class="line-item"><span>Netto leasebudget</span><span class="val" id="nettoPayoutOut">—</span></div>
-          <div class="line-item"><span>+ Km-vergoeding (netto)</span><span class="val" id="kmVergoedingOut">—</span></div>
-          <div class="line-item" style="font-weight:600; color:var(--ink);"><span>= Totaal beschikbaar</span><span class="val" id="beschikbaarOut">—</span></div>
+          <div class="line-item subtotal"><span>Totale autokosten</span><span class="val" id="totaalAutoOut">—</span></div>
+
+          <p class="refund-label">Krijg je terug van je werkgever</p>
+          <div class="line-item refund"><span>Netto leasebudget</span><span class="val" id="nettoPayoutOut">—</span></div>
+          <div class="line-item refund"><span>+ Km-vergoeding (netto)</span><span class="val" id="kmVergoedingOut">—</span></div>
+          <div class="line-item refund subtotal"><span>= Totaal beschikbaar</span><span class="val" id="beschikbaarOut">—</span></div>
           <div class="headline-number">
             <div class="label">Kosten uit eigen zak, per maand</div>
             <div class="amount neg" id="priveNetto">—</div>
