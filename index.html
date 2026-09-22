@@ -257,18 +257,29 @@
     color: var(--ink);
     border-radius: 3px;
   }
-  .calc-row select {
-    width: 150px;
-    max-width: 100%;
-    flex: 0 0 auto;
-    box-sizing: border-box;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 12.5px;
-    padding: 4px 6px;
+  .fuel-toggle {
+    display: inline-flex;
+    flex-shrink: 0;
     border: 1px solid var(--line-strong);
-    background: var(--surface);
-    color: var(--ink);
     border-radius: 3px;
+    overflow: hidden;
+  }
+  .fuel-toggle-btn {
+    background: var(--surface);
+    border: none;
+    border-right: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .fuel-toggle-btn:last-child { border-right: none; }
+  .fuel-toggle-btn:hover:not(.active) { background: var(--bg); color: var(--ink); }
+  .fuel-toggle-btn.active {
+    background: var(--brass-soft);
+    color: var(--surface);
+    font-weight: 600;
   }
   .calc-result {
     display: flex;
@@ -947,12 +958,13 @@
           <summary>Hulp nodig bij het berekenen?</summary>
           <div class="calc-helper-body">
             <div class="calc-row">
-              <label for="afschrijvingBrandstof">Brandstoftype</label>
-              <select id="afschrijvingBrandstof">
-                <option value="benzine" selected>Benzine of diesel</option>
-                <option value="hybride">Hybride</option>
-                <option value="elektrisch">Elektrisch</option>
-              </select>
+              <label id="afschrijvingBrandstofLabel">Brandstoftype</label>
+              <div class="fuel-toggle" role="group" aria-labelledby="afschrijvingBrandstofLabel">
+                <button type="button" class="fuel-toggle-btn" data-value="elektrisch" title="Elektrisch">EV</button>
+                <button type="button" class="fuel-toggle-btn" data-value="hybride" title="Hybride">H</button>
+                <button type="button" class="fuel-toggle-btn active" data-value="benzine" title="Benzine of diesel">B/D</button>
+              </div>
+              <input type="hidden" id="afschrijvingBrandstof" value="benzine">
             </div>
             <div class="calc-row">
               <label for="afschrijvingAanschaf">Aanschafprijs</label>
@@ -1317,7 +1329,8 @@
     let currentValue = null;
 
     function update() {
-      const values = inputs.map(el => el.tagName === 'SELECT' ? el.value : parseFloat(el.value));
+      const isTextValue = el => el.tagName === 'SELECT' || el.type === 'hidden';
+      const values = inputs.map(el => isTextValue(el) ? el.value : parseFloat(el.value));
       const allValid = values.every(v => typeof v === 'string' ? v !== '' : !isNaN(v));
       const raw = allValid ? compute(...values) : null;
       const isObject = raw !== null && typeof raw === 'object';
@@ -1342,6 +1355,26 @@
       target.dispatchEvent(new Event('input'));
     });
   }
+
+  // Horizontale segmented-control (EV | H | B/D) die een verborgen input bijwerkt,
+  // zodat setupCalcHelper 'm net als de andere velden kan uitlezen.
+  function setupFuelToggle(containerEl, hiddenInputId) {
+    const hiddenInput = $(hiddenInputId);
+    const buttons = Array.from(containerEl.querySelectorAll('.fuel-toggle-btn'));
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        hiddenInput.value = btn.dataset.value;
+        hiddenInput.dispatchEvent(new Event('input'));
+      });
+    });
+  }
+
+  setupFuelToggle(
+    $('afschrijvingBrandstof').closest('.calc-row').querySelector('.fuel-toggle'),
+    'afschrijvingBrandstof'
+  );
 
   setupCalcHelper({
     inputIds: ['afschrijvingBrandstof', 'afschrijvingAanschaf', 'afschrijvingLeeftijd', 'afschrijvingMaanden'],
