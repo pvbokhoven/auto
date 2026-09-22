@@ -628,7 +628,7 @@
     <div class="explainer-body">
       <p>Krijg je van je werkgever een leasebudget, dan heb je meestal de keuze: neem je daadwerkelijk een leaseauto van de zaak, of laat je het budget (na aftrek van eventuele treinkosten) uitbetalen als brutoloon en koop je zelf een auto? Deze tool zet beide routes naast elkaar en rekent ze door naar hetzelfde getal: wat kost het je per maand uit eigen zak.</p>
       <p>Bij de leaseauto is dat vrijwel alleen de bijtelling — het fiscale bedrag dat wordt opgeteld bij je inkomen omdat je een auto van de zaak ook privé mag gebruiken — plus een eventuele eigen bijdrage. Bij privé kopen zet je de werkelijke autokosten (energie, verzekering, afschrijving, onderhoud, wegenbelasting, overig) af tegen wat het uitgekeerde leasebudget je netto oplevert. Het verschil tussen die twee maandbedragen bepaalt welke route voordeliger is, en met hoeveel.</p>
-      <p>De zakelijke kilometervergoeding werkt hierbij net als treinkosten: het bedrag (kilometers × tarief) wordt eerst bruto van de leasebudget-uitkering afgetrokken, en vervolgens onbelast — dus zonder inhouding van je belastingschijf — weer aan jou uitgekeerd. Dat scheelt met de rest van het uitgekeerde budget, waarover je wél belasting betaalt.</p>
+      <p>De laadkosten reken je over al je kilometers, zakelijk én privé — die betaal je namelijk altijd zelf, ongeacht waarvoor de rit was. De zakelijke kilometervergoeding is daar los van: dat bedrag (kilometers × tarief) wordt eerst bruto van de leasebudget-uitkering afgetrokken, en vervolgens onbelast — dus zonder inhouding van je belastingschijf — weer aan jou uitgekeerd. Omdat die vergoeding meestal hoger is dan je werkelijke laadkosten, houd je op je zakelijke kilometers per saldo iets over.</p>
       <p>Vul links jouw eigen cijfers in — de tool rekent live door zodra je een veld aanpast.</p>
     </div>
   </details>
@@ -846,7 +846,7 @@
           <li><strong>Brandstof-/laadkosten per km:</strong> een richtprijs voor 2026 — thuisladen, publiek laden, snelladen of tanken lopen sterk uiteen in prijs.</li>
           <li><strong>Onderhoud:</strong> vooringevuld met een richtbedrag — pas dit aan naar jouw auto, merk en leeftijd.</li>
           <li><strong>Wegenbelasting:</strong> een volledig elektrische auto betaalt in 2026 zo'n 70% van het normale tarief; voor benzine/diesel geldt het volledige tarief.</li>
-          <li><strong>Brandstof-/energiekosten:</strong> alleen voor je privékilometers meegenomen. De km-vergoeding is een all-in tarief dat verondersteld wordt ook de brandstofkosten van je zakelijke kilometers te dekken — die apart meetellen zou dubbelop zijn.</li>
+          <li><strong>Brandstof-/energiekosten:</strong> berekend over al je kilometers, zakelijk én privé — die betaal je zelf, los van de zakelijke km-vergoeding die je daarvoor apart terugkrijgt.</li>
           <li><strong>Full-service lease:</strong> wordt verondersteld onderhoud, verzekering en laden te dekken.</li>
         </ul>
       </div>
@@ -902,9 +902,10 @@
     $('kmVergoedingOut').textContent = eur(kmVergoeding) + ' / mnd';
     $('kmVergoedingHint').textContent = "Wordt bruto van je leasebudget-uitkering afgetrokken (net als treinkosten) en vervolgens onbelast aan jou uitgekeerd — op basis van je zakelijke kilometers is dat nu " + eur(kmVergoeding) + " / mnd.";
 
-    // Privé route — kosten
-    const priveKmPerMaand = jaarkm * (1 - pctZakelijk / 100) / 12;
-    const energieKosten = priveKmPerMaand * laadkosten;
+    // Privé route — kosten (laadkosten over al je kilometers, want die betaal je altijd zelf;
+    // de zakelijke km-vergoeding hierboven is een aparte, los berekende vergoeding daarvoor)
+    const kmPerMaand = jaarkm / 12;
+    const energieKosten = kmPerMaand * laadkosten;
     const totaalAuto = energieKosten + verzekering + afschrijving + onderhoud + wegenbelasting + overig;
     const priveNetto = totaalAuto - beschikbaarPrive;
 
