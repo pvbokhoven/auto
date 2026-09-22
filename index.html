@@ -257,6 +257,19 @@
     color: var(--ink);
     border-radius: 3px;
   }
+  .calc-row select {
+    width: 150px;
+    max-width: 100%;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12.5px;
+    padding: 4px 6px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 3px;
+  }
   .calc-result {
     display: flex;
     flex-wrap: wrap;
@@ -934,6 +947,14 @@
           <summary>Hulp nodig bij het berekenen?</summary>
           <div class="calc-helper-body">
             <div class="calc-row">
+              <label for="afschrijvingBrandstof">Brandstoftype</label>
+              <select id="afschrijvingBrandstof">
+                <option value="benzine" selected>Benzine of diesel</option>
+                <option value="hybride">Hybride</option>
+                <option value="elektrisch">Elektrisch</option>
+              </select>
+            </div>
+            <div class="calc-row">
               <label for="afschrijvingAanschaf">Aanschafprijs</label>
               <input type="number" id="afschrijvingAanschaf" placeholder="bijv. 35000" min="0" step="500">
             </div>
@@ -949,7 +970,7 @@
               <span>Geschat: <strong id="afschrijvingCalcResult">—</strong></span>
               <button type="button" id="afschrijvingCalcApply" class="calc-apply-btn" disabled>Overnemen</button>
             </div>
-            <p class="calc-caveat">Vuistregel op basis van een gemiddelde waardedalingscurve, niet merk- of type-specifiek — voor een preciezere schatting: zoek hetzelfde merk/bouwjaar/kilometerstand op een marktplaats.</p>
+            <p class="calc-caveat">Vuistregel op basis van een gemiddelde waardedalingscurve per brandstoftype (EV historisch iets sneller in de eerste jaren, hybride iets vlakker) — niet merk- of model-specifiek. Voor een preciezere schatting: zoek hetzelfde merk/bouwjaar/kilometerstand op een marktplaats.</p>
           </div>
         </details>
       </div>
@@ -1249,17 +1270,31 @@
     calc();
   });
 
-  // Gemiddelde, merk-onafhankelijke waardebehoud-curve (aandeel van de nieuwprijs dat
-  // resteert bij een bepaalde leeftijd) — een brede vuistregel, geen exacte voorspelling.
-  const RETENTION_CURVE = [
-    [0, 1.00], [1, 0.82], [2, 0.70], [3, 0.60], [4, 0.52],
-    [5, 0.46], [6, 0.40], [7, 0.36], [8, 0.32], [9, 0.29], [10, 0.26],
-    [15, 0.15], [20, 0.08]
-  ];
+  // Gemiddelde waardebehoud-curves (aandeel van de nieuwprijs dat resteert bij een
+  // bepaalde leeftijd), per brandstoftype — brede vuistregels, geen exacte voorspelling.
+  // EV historisch iets steiler in de eerste jaren, hybride iets vlakker; op de lange
+  // termijn convergeren ze naar hetzelfde restwaarde-niveau.
+  const RETENTION_CURVES = {
+    benzine: [
+      [0, 1.00], [1, 0.82], [2, 0.70], [3, 0.60], [4, 0.52],
+      [5, 0.46], [6, 0.40], [7, 0.36], [8, 0.32], [9, 0.29], [10, 0.26],
+      [15, 0.15], [20, 0.08]
+    ],
+    hybride: [
+      [0, 1.00], [1, 0.86], [2, 0.75], [3, 0.65], [4, 0.57],
+      [5, 0.50], [6, 0.43], [7, 0.38], [8, 0.33], [9, 0.29], [10, 0.26],
+      [15, 0.15], [20, 0.08]
+    ],
+    elektrisch: [
+      [0, 1.00], [1, 0.72], [2, 0.60], [3, 0.51], [4, 0.44],
+      [5, 0.39], [6, 0.35], [7, 0.33], [8, 0.31], [9, 0.29], [10, 0.26],
+      [15, 0.15], [20, 0.08]
+    ]
+  };
 
-  function retentionAt(ageYears) {
+  function retentionAt(ageYears, brandstofType) {
     const age = Math.max(0, ageYears);
-    const curve = RETENTION_CURVE;
+    const curve = RETENTION_CURVES[brandstofType] || RETENTION_CURVES.benzine;
     if (age >= curve[curve.length - 1][0]) return curve[curve.length - 1][1];
     for (let i = 0; i < curve.length - 1; i++) {
       const [age1, val1] = curve[i];
@@ -1282,8 +1317,9 @@
     let currentValue = null;
 
     function update() {
-      const values = inputs.map(el => parseFloat(el.value));
-      const raw = values.every(v => !isNaN(v)) ? compute(...values) : null;
+      const values = inputs.map(el => el.tagName === 'SELECT' ? el.value : parseFloat(el.value));
+      const allValid = values.every(v => typeof v === 'string' ? v !== '' : !isNaN(v));
+      const raw = allValid ? compute(...values) : null;
       const isObject = raw !== null && typeof raw === 'object';
       const result = isObject ? raw.value : raw;
 
@@ -1299,7 +1335,7 @@
       applyBtn.disabled = false;
     }
 
-    inputs.forEach(el => el.addEventListener('input', update));
+    inputs.forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', update));
     applyBtn.addEventListener('click', () => {
       if (currentValue === null) return;
       target.value = currentValue;
@@ -1308,16 +1344,16 @@
   }
 
   setupCalcHelper({
-    inputIds: ['afschrijvingAanschaf', 'afschrijvingLeeftijd', 'afschrijvingMaanden'],
+    inputIds: ['afschrijvingBrandstof', 'afschrijvingAanschaf', 'afschrijvingLeeftijd', 'afschrijvingMaanden'],
     resultId: 'afschrijvingCalcResult',
     applyBtnId: 'afschrijvingCalcApply',
     targetId: 'afschrijving',
-    compute: (aanschaf, leeftijd, maanden) => {
+    compute: (brandstof, aanschaf, leeftijd, maanden) => {
       if (maanden <= 0) return null;
-      const retentionNu = retentionAt(leeftijd);
+      const retentionNu = retentionAt(leeftijd, brandstof);
       if (retentionNu <= 0) return null;
       const nieuwprijsEquivalent = aanschaf / retentionNu;
-      const retentionLater = retentionAt(leeftijd + maanden / 12);
+      const retentionLater = retentionAt(leeftijd + maanden / 12, brandstof);
       const waardeLater = nieuwprijsEquivalent * retentionLater;
       return { value: (aanschaf - waardeLater) / maanden, meta: { waardeLater } };
     },
