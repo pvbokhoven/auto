@@ -671,6 +671,16 @@
     font-size: 12px;
     color: var(--ink-faint);
   }
+  .site-footer .site-footer-link {
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--ink-faint);
+  }
+  .site-footer .site-footer-link:hover {
+    color: var(--brass);
+    border-bottom-color: var(--brass);
+  }
 
   @media print {
     /* PDF-export ziet er altijd uit als het lichte thema, ongeacht de actieve weergave op het scherm */
@@ -1111,6 +1121,7 @@
 
   <div class="site-footer">
     <img src="peter_avatar.png" alt="" class="signature-avatar">
+    <a href="https://van--bokhoven.com" target="_blank" rel="noopener" class="site-footer-link">van--bokhoven.com</a>
     <span class="divider">|</span>
     <span class="site-footer-text">Made in 2026</span>
   </div>
