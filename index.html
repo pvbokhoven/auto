@@ -159,22 +159,22 @@
   }
 
   main {
-    display: grid;
-    grid-template-columns: minmax(280px, 340px) 1fr;
-    gap: 0;
     border: 1px solid var(--line-strong);
     background: var(--surface);
   }
 
-  @media (max-width: 760px) {
-    main { grid-template-columns: 1fr; }
-    .inputs { border-right: none; border-bottom: 1px solid var(--line-strong); }
-  }
-
   .inputs {
     padding: 28px 26px;
-    border-right: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line-strong);
   }
+
+  .input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0 32px;
+    margin-bottom: 8px;
+  }
+  .input-grid:last-child { margin-bottom: 0; }
 
   .panel-label {
     font-size: 12.5px;
@@ -188,7 +188,6 @@
     padding: 14px 0;
     border-bottom: 1px solid var(--line);
   }
-  .field:first-of-type { padding-top: 0; }
 
   .field label {
     display: block;
@@ -581,7 +580,6 @@
 
     main {
       order: 2;
-      grid-template-columns: 1fr;
       border: none;
       background: transparent;
     }
@@ -706,6 +704,7 @@
     <div class="inputs">
       <p class="panel-label">Jouw situatie</p>
 
+      <div class="input-grid">
       <div class="field">
         <label for="catalogus">Cataloguswaarde auto (elektrisch)</label>
         <div class="num-row">
@@ -781,9 +780,11 @@
           <option value="0.495">Boven €78.426 — 49,50%</option>
         </select>
       </div>
+      </div>
 
       <p class="panel-label" style="margin-top:26px;">Kosten van een eigen auto</p>
 
+      <div class="input-grid">
       <div class="field">
         <label for="laadkosten">Brandstof-/laadkosten per km</label>
         <div class="num-row">
@@ -829,13 +830,14 @@
         <div class="hint">per maand — een volledig elektrische auto betaalt in 2026 zo'n 70% van het normale tarief; check je eigen tarief op belastingdienst.nl</div>
       </div>
 
-      <div class="field" style="border-bottom:none;">
+      <div class="field">
         <label for="overigeKosten">Overige kosten <span style="color:var(--ink-faint);">(optioneel)</span></label>
         <div class="num-row">
           <span class="prefix">€</span>
           <input type="number" id="overigeKosten" value="0" min="0" step="5">
         </div>
         <div class="hint">laadpas-abonnement, parkeren e.d.</div>
+      </div>
       </div>
     </div>
 
