@@ -206,6 +206,81 @@
     margin-top: 5px;
   }
 
+  .calc-helper { margin-top: 8px; }
+  .calc-helper summary {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--brass);
+    cursor: pointer;
+    list-style: none;
+  }
+  .calc-helper summary::-webkit-details-marker { display: none; }
+  .calc-helper summary::before {
+    content: "+";
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .calc-helper[open] summary::before { content: "–"; }
+  .calc-helper[open] summary { margin-bottom: 8px; }
+
+  .calc-helper-body {
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+  }
+  .calc-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .calc-row label {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .calc-row input {
+    width: 100px;
+    flex-shrink: 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 4px 7px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 3px;
+  }
+  .calc-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dotted var(--line);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .calc-result strong {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .calc-apply-btn {
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--brass-soft);
+    color: var(--brass);
+    font-size: 11.5px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .calc-apply-btn:hover { background: var(--brass-soft); color: var(--surface); }
+  .calc-apply-btn:disabled { opacity: 0.4; cursor: default; background: var(--surface); color: var(--brass); }
+
   .num-row {
     position: relative;
   }
@@ -805,6 +880,23 @@
           <input type="number" id="laadkosten" value="0.08" min="0" step="0.005">
         </div>
         <div class="hint">richtprijs 2026: thuisladen ±€0,05/km, publiek ±€0,08/km, snelladen ±€0,13/km</div>
+        <details class="calc-helper">
+          <summary>Hulp nodig bij het berekenen?</summary>
+          <div class="calc-helper-body">
+            <div class="calc-row">
+              <label for="laadkostenPrijs">Energieprijs (€/kWh)</label>
+              <input type="number" id="laadkostenPrijs" placeholder="bijv. 0,30" min="0" step="0.01">
+            </div>
+            <div class="calc-row">
+              <label for="laadkostenVerbruik">Verbruik (kWh/100km)</label>
+              <input type="number" id="laadkostenVerbruik" placeholder="bijv. 17" min="0" step="0.5">
+            </div>
+            <div class="calc-result">
+              <span>Geschat: <strong id="laadkostenCalcResult">—</strong></span>
+              <button type="button" id="laadkostenCalcApply" class="calc-apply-btn" disabled>Overnemen</button>
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="field">
@@ -823,6 +915,27 @@
           <input type="number" id="afschrijving" value="100" min="0" step="10">
         </div>
         <div class="hint">per maand — (aanschafprijs − verwachte waarde later) / aantal maanden, of gebruik een private-lease-indicatie als vuistregel</div>
+        <details class="calc-helper">
+          <summary>Hulp nodig bij het berekenen?</summary>
+          <div class="calc-helper-body">
+            <div class="calc-row">
+              <label for="afschrijvingAanschaf">Aanschafprijs</label>
+              <input type="number" id="afschrijvingAanschaf" placeholder="bijv. 35000" min="0" step="500">
+            </div>
+            <div class="calc-row">
+              <label for="afschrijvingRestwaarde">Verwachte waarde later</label>
+              <input type="number" id="afschrijvingRestwaarde" placeholder="bijv. 15000" min="0" step="500">
+            </div>
+            <div class="calc-row">
+              <label for="afschrijvingMaanden">Aantal maanden</label>
+              <input type="number" id="afschrijvingMaanden" placeholder="bijv. 48" min="1" step="1">
+            </div>
+            <div class="calc-result">
+              <span>Geschat: <strong id="afschrijvingCalcResult">—</strong></span>
+              <button type="button" id="afschrijvingCalcApply" class="calc-apply-btn" disabled>Overnemen</button>
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="field">
@@ -1118,6 +1231,59 @@
   $('leaseBudgetUitkeerbaar').addEventListener('change', () => {
     syncLeaseFields();
     calc();
+  });
+
+  // Kleine rekenhulpjes: berekenen een schatting uit een paar losse getallen
+  // en zetten die met één klik in het echte invoerveld.
+  function setupCalcHelper({ inputIds, resultId, applyBtnId, targetId, compute, round, format }) {
+    const inputs = inputIds.map($);
+    const resultEl = $(resultId);
+    const applyBtn = $(applyBtnId);
+    const target = $(targetId);
+    let currentValue = null;
+
+    function update() {
+      const values = inputs.map(el => parseFloat(el.value));
+      const result = values.every(v => !isNaN(v)) ? compute(...values) : null;
+
+      if (result === null || !isFinite(result) || result < 0) {
+        currentValue = null;
+        resultEl.textContent = '—';
+        applyBtn.disabled = true;
+        return;
+      }
+
+      currentValue = round(result);
+      resultEl.textContent = format(currentValue);
+      applyBtn.disabled = false;
+    }
+
+    inputs.forEach(el => el.addEventListener('input', update));
+    applyBtn.addEventListener('click', () => {
+      if (currentValue === null) return;
+      target.value = currentValue;
+      target.dispatchEvent(new Event('input'));
+    });
+  }
+
+  setupCalcHelper({
+    inputIds: ['afschrijvingAanschaf', 'afschrijvingRestwaarde', 'afschrijvingMaanden'],
+    resultId: 'afschrijvingCalcResult',
+    applyBtnId: 'afschrijvingCalcApply',
+    targetId: 'afschrijving',
+    compute: (aanschaf, restwaarde, maanden) => maanden > 0 ? (aanschaf - restwaarde) / maanden : null,
+    round: v => Math.round(v),
+    format: v => eur(v) + ' / mnd'
+  });
+
+  setupCalcHelper({
+    inputIds: ['laadkostenPrijs', 'laadkostenVerbruik'],
+    resultId: 'laadkostenCalcResult',
+    applyBtnId: 'laadkostenCalcApply',
+    targetId: 'laadkosten',
+    compute: (prijs, verbruik) => (prijs * verbruik) / 100,
+    round: v => Math.round(v * 1000) / 1000,
+    format: v => '€' + v.toLocaleString('nl-NL', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '/km'
   });
 
   applySharedState();
