@@ -303,6 +303,7 @@
   .results-toolbar {
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
     margin-bottom: 18px;
   }
 
@@ -824,6 +825,13 @@
       </div>
 
       <div class="results-toolbar">
+        <button id="shareLink" class="export-btn" type="button" title="Kopieert een link met al je ingevulde waarden, zodat iemand anders verder kan met dezelfde berekening.">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L18.5 4.5"></path>
+            <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.5 19.5"></path>
+          </svg>
+          Kopieer deelbare link
+        </button>
         <button id="exportPdf" class="export-btn" type="button">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -898,6 +906,23 @@
 <script>
   const $ = id => document.getElementById(id);
   const eur = n => n.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+
+  // Korte sleutels voor de deelbare link (in de URL-hash, dus nooit naar een server verstuurd)
+  const SHARE_FIELDS = {
+    ca: 'catalogus', lb: 'leaseBudget', eb: 'eigenBijdrage', tk: 'treinkosten',
+    jk: 'jaarkm', pz: 'pctZakelijk', kt: 'kmVergoedingTarief', sc: 'schijf',
+    lk: 'laadkosten', vz: 'verzekering', af: 'afschrijving', oh: 'onderhoud',
+    wb: 'wegenbelasting', ov: 'overigeKosten'
+  };
+
+  function applySharedState() {
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    if ([...params.keys()].length === 0) return;
+    for (const [key, id] of Object.entries(SHARE_FIELDS)) {
+      if (params.has(key)) $(id).value = params.get(key);
+    }
+    if (params.has('lu')) $('leaseBudgetUitkeerbaar').checked = params.get('lu') === '1';
+  }
 
   function calc() {
     const catalogus = parseFloat($('catalogus').value) || 0;
@@ -1043,6 +1068,7 @@
     calc();
   });
 
+  applySharedState();
   syncLeaseFields();
   calc();
 
@@ -1088,6 +1114,44 @@
     window.addEventListener('afterprint', restore);
 
     window.print();
+  });
+
+  // Deelbare link: alle ingevulde waarden zitten gecodeerd in de URL-hash
+  $('shareLink').addEventListener('click', async () => {
+    const params = new URLSearchParams();
+    for (const [key, id] of Object.entries(SHARE_FIELDS)) {
+      params.set(key, $(id).value);
+    }
+    params.set('lu', $('leaseBudgetUitkeerbaar').checked ? '1' : '0');
+    const url = window.location.origin + window.location.pathname + '#' + params.toString();
+
+    const btn = $('shareLink');
+    const originalHtml = btn.innerHTML;
+    const showFeedback = text => {
+      btn.textContent = text;
+      setTimeout(() => { btn.innerHTML = originalHtml; }, 1800);
+    };
+
+    function legacyCopy(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(textarea);
+      return ok;
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      showFeedback('Link gekopieerd!');
+    } catch (e) {
+      showFeedback(legacyCopy(url) ? 'Link gekopieerd!' : 'Kopiëren mislukt');
+    }
   });
 </script>
 </body>
