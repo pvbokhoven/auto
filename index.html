@@ -320,6 +320,49 @@
     font-style: italic;
   }
 
+  .market-check {
+    margin: 10px 0 4px;
+    padding-top: 10px;
+    border-top: 1px dotted var(--line);
+  }
+  .market-check-title {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .market-check-intro,
+  .market-hint {
+    margin: 0 0 8px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--ink-faint);
+  }
+  .market-hint { margin: 6px 0 8px; }
+  .calc-row input.calc-text {
+    width: 120px;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .market-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+  }
+  .market-link {
+    font-size: 11.5px;
+    padding: 4px 10px;
+    border: 1px solid var(--brass-soft);
+    border-radius: 3px;
+    color: var(--brass);
+    text-decoration: none;
+    background: var(--surface);
+  }
+  .market-link:hover { background: var(--brass-soft); color: var(--surface); }
+  .market-link.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
   .num-row {
     position: relative;
   }
@@ -988,11 +1031,38 @@
               <label for="afschrijvingMaanden">Aantal maanden dat je 'm rijdt</label>
               <input type="number" id="afschrijvingMaanden" placeholder="bijv. 48" min="1" step="1">
             </div>
+
+            <div class="market-check">
+              <p class="market-check-title">Marktcheck (optioneel)</p>
+              <p class="market-check-intro">Zoek auto's die nu zo oud zijn als de jouwe aan het eind van je rijperiode, en gebruik hun prijs als restwaarde.</p>
+              <div class="calc-row">
+                <label for="marktMerk">Merk</label>
+                <input type="text" id="marktMerk" class="calc-text" placeholder="bijv. Volkswagen" autocomplete="off">
+              </div>
+              <div class="calc-row">
+                <label for="marktModel">Model</label>
+                <input type="text" id="marktModel" class="calc-text" placeholder="bijv. ID.3" autocomplete="off">
+              </div>
+              <div class="calc-row">
+                <label for="marktKm">Verwachte km-stand bij verkoop</label>
+                <input type="number" id="marktKm" placeholder="bijv. 90000" min="0" step="5000">
+              </div>
+              <div class="market-links">
+                <a id="marktLinkAutoscout" class="market-link disabled" target="_blank" rel="noopener">AutoScout24 ↗</a>
+                <a id="marktLinkMarktplaats" class="market-link disabled" target="_blank" rel="noopener">Marktplaats ↗</a>
+              </div>
+              <p class="market-hint" id="marktHint">Vul merk, aanschafprijs, leeftijd en aantal maanden in om de zoeklinks te activeren.</p>
+              <div class="calc-row">
+                <label for="afschrijvingMarktwaarde">Gemiddelde prijs die je vond</label>
+                <input type="number" id="afschrijvingMarktwaarde" data-optional="true" placeholder="bijv. 15000" min="0" step="500">
+              </div>
+            </div>
+
             <div class="calc-result">
               <span>Geschat: <strong id="afschrijvingCalcResult">—</strong></span>
               <button type="button" id="afschrijvingCalcApply" class="calc-apply-btn" disabled>Overnemen</button>
             </div>
-            <p class="calc-caveat">Vuistregel op basis van een gemiddelde waardedalingscurve per brandstoftype (EV historisch iets sneller in de eerste jaren, hybride iets vlakker) — niet merk- of model-specifiek. Voor een preciezere schatting: zoek hetzelfde merk/bouwjaar/kilometerstand op een marktplaats.</p>
+            <p class="calc-caveat">Zonder marktprijs: vuistregel op basis van een gemiddelde waardedalingscurve per brandstoftype (EV historisch iets sneller in de eerste jaren, hybride iets vlakker) — niet merk- of model-specifiek. Met marktprijs: de restwaarde die je daar zelf hebt afgelezen.</p>
           </div>
         </details>
       </div>
@@ -1342,8 +1412,11 @@
 
     function update() {
       const isTextValue = el => el.tagName === 'SELECT' || el.type === 'hidden';
-      const values = inputs.map(el => isTextValue(el) ? el.value : parseFloat(el.value));
-      const allValid = values.every(v => typeof v === 'string' ? v !== '' : !isNaN(v));
+      const values = inputs.map(el => {
+        if (el.dataset.optional && el.value === '') return null;
+        return isTextValue(el) ? el.value : parseFloat(el.value);
+      });
+      const allValid = values.every(v => v === null || (typeof v === 'string' ? v !== '' : !isNaN(v)));
       const raw = allValid ? compute(...values) : null;
       const isObject = raw !== null && typeof raw === 'object';
       const result = isObject ? raw.value : raw;
@@ -1389,22 +1462,74 @@
   );
 
   setupCalcHelper({
-    inputIds: ['afschrijvingBrandstof', 'afschrijvingAanschaf', 'afschrijvingLeeftijd', 'afschrijvingMaanden'],
+    inputIds: ['afschrijvingBrandstof', 'afschrijvingAanschaf', 'afschrijvingLeeftijd', 'afschrijvingMaanden', 'afschrijvingMarktwaarde'],
     resultId: 'afschrijvingCalcResult',
     applyBtnId: 'afschrijvingCalcApply',
     targetId: 'afschrijving',
-    compute: (brandstof, aanschaf, leeftijd, maanden) => {
+    compute: (brandstof, aanschaf, leeftijd, maanden, marktwaarde) => {
       if (maanden <= 0) return null;
+      if (marktwaarde !== null) {
+        return { value: (aanschaf - marktwaarde) / maanden, meta: { waardeLater: marktwaarde, bron: 'markt' } };
+      }
       const retentionNu = retentionAt(leeftijd, brandstof);
       if (retentionNu <= 0) return null;
       const nieuwprijsEquivalent = aanschaf / retentionNu;
       const retentionLater = retentionAt(leeftijd + maanden / 12, brandstof);
       const waardeLater = nieuwprijsEquivalent * retentionLater;
-      return { value: (aanschaf - waardeLater) / maanden, meta: { waardeLater } };
+      return { value: (aanschaf - waardeLater) / maanden, meta: { waardeLater, bron: 'vuistregel' } };
     },
     round: v => Math.round(v),
-    format: (v, meta) => eur(v) + ' / mnd' + (meta ? ` (restwaarde ≈ ${eur(Math.round(meta.waardeLater))})` : '')
+    format: (v, meta) => eur(v) + ' / mnd' + (meta ? ` (restwaarde ≈ ${eur(Math.round(meta.waardeLater))}, ${meta.bron === 'markt' ? 'marktprijs' : 'vuistregel'})` : '')
   });
+
+  // Marktcheck: bouwt vooraf ingevulde zoeklinks voor AutoScout24 en Marktplaats. We zoeken op
+  // auto's die nu zo oud zijn als de jouwe aan het einde van je rijperiode, met de verwachte
+  // km-stand — hun vraagprijzen zijn een directe proxy voor je restwaarde.
+  (function setupMarketCheck() {
+    const fuelCodes = { elektrisch: 'E', hybride: '2', benzine: 'B,D' };
+    const slug = s => s.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9.-]/g, '');
+    const asLink = $('marktLinkAutoscout');
+    const mpLink = $('marktLinkMarktplaats');
+    const hintEl = $('marktHint');
+    const idleHint = 'Vul merk, leeftijd en aantal maanden in om de zoeklinks te activeren.';
+
+    function update() {
+      const merk = $('marktMerk').value.trim();
+      const model = $('marktModel').value.trim();
+      const leeftijd = parseFloat($('afschrijvingLeeftijd').value);
+      const maanden = parseFloat($('afschrijvingMaanden').value);
+      const km = parseFloat($('marktKm').value);
+      const brandstof = $('afschrijvingBrandstof').value;
+
+      const ready = merk && !isNaN(leeftijd) && !isNaN(maanden) && maanden > 0;
+      [asLink, mpLink].forEach(a => a.classList.toggle('disabled', !ready));
+      if (!ready) {
+        asLink.removeAttribute('href');
+        mpLink.removeAttribute('href');
+        hintEl.textContent = idleHint;
+        return;
+      }
+
+      const zoekJaar = Math.round(new Date().getFullYear() - (leeftijd + maanden / 12));
+      const van = zoekJaar - 1;
+      const tot = zoekJaar + 1;
+
+      const asParams = new URLSearchParams({ fregfrom: van, fregto: tot, fuel: fuelCodes[brandstof] });
+      if (!isNaN(km) && km > 0) asParams.set('kmto', km);
+      asLink.href = `https://www.autoscout24.nl/lst/${slug(merk)}${model ? '/' + slug(model) : ''}?${asParams}`;
+
+      let hash = `q:${encodeURIComponent((merk + ' ' + model).trim()).replace(/%20/g, '+')}|constructionYearFrom:${van}|constructionYearTo:${tot}`;
+      if (!isNaN(km) && km > 0) hash += `|mileageTo:${km}`;
+      mpLink.href = `https://www.marktplaats.nl/l/auto-s/#${hash}`;
+
+      hintEl.textContent = `Zoekt bouwjaar ${van}–${tot} (zo oud is jouw auto aan het einde van je rijperiode)` +
+        ' — AutoScout24 filtert ook op brandstof, Marktplaats niet. Lees een gemiddelde prijs af en vul die hieronder in.';
+    }
+
+    ['marktMerk', 'marktModel', 'marktKm', 'afschrijvingLeeftijd', 'afschrijvingMaanden', 'afschrijvingBrandstof']
+      .forEach(id => $(id).addEventListener('input', update));
+    update();
+  })();
 
   setupCalcHelper({
     inputIds: ['laadkostenPrijs', 'laadkostenVerbruik'],
